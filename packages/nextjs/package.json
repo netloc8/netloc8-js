@@ -1,0 +1,41 @@
+{
+    "name": "@netloc8/nextjs",
+    "version": "0.1.0",
+    "type": "module",
+    "license": "Elastic-2.0",
+    "exports": {
+        ".": {
+            "bun": "./src/index.ts",
+            "import": "./dist/index.mjs",
+            "types": "./dist/index.d.mts"
+        },
+        "./proxy": {
+            "bun": "./src/proxy.ts",
+            "import": "./dist/proxy.mjs",
+            "types": "./dist/proxy.d.mts"
+        },
+        "./server": {
+            "bun": "./src/server.ts",
+            "import": "./dist/server.mjs",
+            "types": "./dist/server.d.mts"
+        }
+    },
+    "files": [
+        "dist/",
+        "proxy/",
+        "server/"
+    ],
+    "scripts": {
+        "build": "tsdown",
+        "clean": "rm -rf dist",
+        "test": "bun test src/"
+    },
+    "peerDependencies": {
+        "next": ">=16.0.0",
+        "react": ">=19.0.0"
+    },
+    "dependencies": {
+        "@netloc8/netloc8-js": "workspace:*",
+        "@netloc8/react": "workspace:*"
+    }
+}

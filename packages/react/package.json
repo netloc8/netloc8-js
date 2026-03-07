@@ -1,0 +1,27 @@
+{
+    "name": "@netloc8/react",
+    "version": "0.1.0",
+    "type": "module",
+    "license": "Elastic-2.0",
+    "exports": {
+        ".": {
+            "bun": "./src/index.ts",
+            "import": "./dist/index.mjs",
+            "types": "./dist/index.d.mts"
+        }
+    },
+    "files": [
+        "dist/"
+    ],
+    "scripts": {
+        "build": "tsdown",
+        "clean": "rm -rf dist",
+        "test": "bun test src/"
+    },
+    "peerDependencies": {
+        "react": ">=19.0.0"
+    },
+    "dependencies": {
+        "@netloc8/netloc8-js": "workspace:*"
+    }
+}
