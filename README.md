@@ -84,13 +84,31 @@ import { GeoGate } from '@netloc8/nextjs';
 </GeoGate>
 ```
 
+### 6. Client-Side SPA (without Next.js proxy)
+
+For pure React SPAs without a server proxy, use a publishable key:
+
+```tsx
+import { NetLoc8Provider, useGeo } from '@netloc8/react';
+
+function App() {
+    return (
+        <NetLoc8Provider publishableKey="pk_...">
+            <LocationBanner />
+        </NetLoc8Provider>
+    );
+}
+```
+
 ## Environment Variables
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `NETLOC8_API_KEY` | Yes | Secret API key (`sk_...`) |
+| `NETLOC8_API_KEY` | Yes (server) | Secret API key (`sk_...`) for proxy and server functions |
 | `NETLOC8_API_URL` | No | API base URL (defaults to `https://netloc8.com`) |
 | `NETLOC8_TEST_IP` | No | Override IP in development |
+
+For client-side SPAs, pass a publishable key (`pk_...`) via the `publishableKey` prop instead.
 
 ## Development
 

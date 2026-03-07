@@ -10,8 +10,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 - `@netloc8/netloc8-js` v0.1.0 — Core package with API client, IP detection, platform header extraction, cookie utilities, response normalization, and geo reconciliation
 - `@netloc8/react` v0.1.0 — React bindings with `NetLoc8Provider`, `useGeo()` hook, `GeoGate` component, and `GeoContext`
 - `@netloc8/nextjs` v0.1.0 — Next.js proxy (`createProxy`, `withGeoRedirect`), server functions (`getGeo`, `getTimezone`), and React re-exports
+- `fetchMyGeo()` and `fetchMyTimezone()` for client-side SPA usage with publishable keys (`pk_`)
+- `publishableKey` and `apiUrl` props on `NetLoc8Provider` for browser-side geo fetching
 - Bun workspace monorepo scaffolding
-- 74 unit tests across all packages
+- 81 unit tests across all packages
 - `tsdown` build pipeline with per-package configs and `isolatedDeclarations` for fast `.d.ts` generation via `oxc-transform`
 
 ### Security
