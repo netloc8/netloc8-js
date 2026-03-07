@@ -8,7 +8,7 @@ import type { Geo } from './types';
  */
 export function normalizeApiResponse(
     raw: Record<string, unknown>,
-    ip: string
+    ip?: string
 ): Geo {
     return {
         ip: (raw.ip as string) ?? ip,

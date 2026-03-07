@@ -3,11 +3,13 @@
 import { useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import type { Geo } from '@netloc8/netloc8-js';
-import { COOKIE_NAME } from '@netloc8/netloc8-js';
+import { COOKIE_NAME, fetchMyGeo, normalizeApiResponse } from '@netloc8/netloc8-js';
 import { GeoContext } from './context';
 
 interface NetLoc8ProviderProps {
     initialGeo?: Geo;
+    publishableKey?: string;
+    apiUrl?: string;
     children: ReactNode;
 }
 
@@ -15,30 +17,65 @@ interface NetLoc8ProviderProps {
  * Provider component that makes geolocation data available to all child
  * components via the useGeo() hook.
  *
- * Handles the critical timezone reconciliation: on mount, reads the browser's
- * Intl.DateTimeFormat timezone and, if it differs from the server-detected
- * timezone, updates the cookie and context state with the more-accurate
- * browser value.
+ * Two usage modes:
+ *
+ * 1. **Server proxy (Next.js):** Pass `initialGeo` from the server. The
+ *    provider only reconciles the browser timezone on mount.
+ *
+ * 2. **Client-side SPA:** Pass `publishableKey` (a `pk_` key). The provider
+ *    fetches geo data from the API on mount via GET /api/v1/ip/me, then
+ *    reconciles the browser timezone.
  */
-export function NetLoc8Provider({ initialGeo, children }: NetLoc8ProviderProps): ReactNode {
+export function NetLoc8Provider({ initialGeo, publishableKey, apiUrl, children }: NetLoc8ProviderProps): ReactNode {
     const [geo, setGeo] = useState<Geo>(initialGeo ?? {});
 
     useEffect(() => {
-        const browserTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        let cancelled = false;
 
-        if (browserTz !== geo.timezone || geo.timezoneFromClient !== true) {
-            setGeo((prevGeo: Geo) => {
-                const updatedGeo: Geo = {
-                    ...prevGeo,
-                    timezone: browserTz,
-                    timezoneFromClient: true,
-                };
+        async function init() {
+            let currentGeo: Geo = initialGeo ?? {};
 
-                document.cookie = `${COOKIE_NAME}=${encodeURIComponent(JSON.stringify(updatedGeo))}; path=/; secure; samesite=lax; max-age=2592000`;
-                return updatedGeo;
-            });
+            // Client-side fetch when publishableKey is provided and no server data
+            if (publishableKey && !initialGeo) {
+                const raw = await fetchMyGeo({ apiKey: publishableKey, apiUrl });
+
+                if (cancelled) {
+                    return;
+                }
+
+                if (raw) {
+                    currentGeo = normalizeApiResponse(raw);
+                    setGeo(currentGeo);
+
+                    document.cookie = `${COOKIE_NAME}=${encodeURIComponent(JSON.stringify(currentGeo))}; path=/; secure; samesite=lax; max-age=2592000`;
+                }
+            }
+
+            // Timezone reconciliation — runs in both modes
+            const browserTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+            if (browserTz !== currentGeo.timezone || currentGeo.timezoneFromClient !== true) {
+                if (!cancelled) {
+                    setGeo((prevGeo: Geo) => {
+                        const updatedGeo: Geo = {
+                            ...prevGeo,
+                            timezone: browserTz,
+                            timezoneFromClient: true,
+                        };
+
+                        document.cookie = `${COOKIE_NAME}=${encodeURIComponent(JSON.stringify(updatedGeo))}; path=/; secure; samesite=lax; max-age=2592000`;
+                        return updatedGeo;
+                    });
+                }
+            }
         }
-    }, []); // Only run once on mount to reconcile initial server state
+
+        init();
+
+        return () => {
+            cancelled = true;
+        };
+    }, []); // Only run once on mount
 
     return (
         <GeoContext.Provider value={geo}>
