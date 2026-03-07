@@ -1,4 +1,5 @@
 import type { FetchGeoOptions } from './types';
+import { CLIENT_ID } from './constants';
 
 /**
  * Fetch geolocation data for an IP address from the NetLoc8 API.
@@ -26,6 +27,7 @@ export async function fetchGeo(
             method: 'GET',
             headers: {
                 'X-API-Key': apiKey,
+                'X-NetLoc8-Client': CLIENT_ID,
                 'Accept': 'application/json',
             },
             signal: AbortSignal.timeout(timeout),
@@ -67,6 +69,7 @@ export async function fetchTimezone(
             method: 'GET',
             headers: {
                 'X-API-Key': apiKey,
+                'X-NetLoc8-Client': CLIENT_ID,
                 'Accept': 'application/json',
             },
             signal: AbortSignal.timeout(timeout),
@@ -112,6 +115,7 @@ export async function fetchMyGeo(
             method: 'GET',
             headers: {
                 'X-API-Key': apiKey,
+                'X-NetLoc8-Client': CLIENT_ID,
                 'Accept': 'application/json',
             },
             signal: AbortSignal.timeout(timeout),
@@ -155,6 +159,7 @@ export async function fetchMyTimezone(
             method: 'GET',
             headers: {
                 'X-API-Key': apiKey,
+                'X-NetLoc8-Client': CLIENT_ID,
                 'Accept': 'application/json',
             },
             signal: AbortSignal.timeout(timeout),
