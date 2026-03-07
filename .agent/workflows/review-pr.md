@@ -25,7 +25,7 @@ Read review comments on a pull request, implement fixes, commit, push, and reply
 
    Get all top-level inline comments grouped by review round, showing which are already replied to:
    ```bash
-   gh api repos/{owner}/{repo}/pulls/<PR>/comments --jq '
+   gh api "repos/{owner}/{repo}/pulls/<PR>/comments?per_page=100" --jq '
      [.[] | select(.in_reply_to_id == null)] as $tops |
      [.[] | select(.in_reply_to_id != null) | .in_reply_to_id] as $replied |
      $tops | group_by(.pull_request_review_id)[] |
@@ -38,7 +38,7 @@ Read review comments on a pull request, implement fixes, commit, push, and reply
 
 3. **For NEW comments, fetch the full body** (the summary above truncates to the first line):
    ```bash
-   gh api repos/{owner}/{repo}/pulls/<PR>/comments --jq '
+   gh api "repos/{owner}/{repo}/pulls/<PR>/comments?per_page=100" --jq '
      [.[] | select(.in_reply_to_id != null) | .in_reply_to_id] as $replied |
      [.[] | select(.in_reply_to_id == null) | select([.id] | inside($replied) | not)] |
      .[] | "---\nID: \(.id)\nFile: \(.path):\(.line // .original_line)\nBody: \(.body)\n"

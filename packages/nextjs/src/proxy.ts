@@ -128,9 +128,16 @@ export function createProxy(options?: CreateProxyOptions):
             }
         }
 
-        // 5. Reconcile all sources
+        // 5. Reconcile all sources — only pass timezone fields from cookie
+        //    to prevent client-side spoofing of location data
+        const trustedCookie = cookieGeo.ip ? {
+            ip: cookieGeo.ip,
+            timezone: cookieGeo.timezone,
+            timezoneFromClient: cookieGeo.timezoneFromClient,
+        } : undefined;
+
         const geo = reconcileGeo({
-            cookie: cookieGeo,
+            cookie: trustedCookie,
             platform: platformGeo,
             api: apiGeo,
             ip: clientIp,

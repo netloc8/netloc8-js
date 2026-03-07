@@ -23,12 +23,13 @@ const SK = process.env.NETLOC8_TEST_SK;
 const PK = process.env.NETLOC8_TEST_PK;
 const SKIP = !SK;
 
-// Disable TLS verification for localhost self-signed certs
-if (API_URL.includes('localhost')) {
-    process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
-}
-
 describe.skipIf(SKIP)('integration: live API', () => {
+
+    // Disable TLS verification for localhost self-signed certs —
+    // placed inside the test suite so it only runs when tests are not skipped
+    if (API_URL.includes('localhost')) {
+        process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+    }
 
     describe('fetchGeo (secret key)', () => {
         test('returns geo data for 8.8.8.8', async () => {
