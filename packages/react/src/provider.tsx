@@ -1,3 +1,6 @@
+declare const __PKG_NAME__: string;
+declare const __PKG_VERSION__: string;
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -59,7 +62,7 @@ export function NetLoc8Provider({ initialGeo, publishableKey, apiUrl, children }
 
             // Client-side fetch when publishableKey is provided and no server data
             if (publishableKey && !initialGeo) {
-                const raw = await fetchMyGeo({ apiKey: publishableKey, apiUrl });
+                const raw = await fetchMyGeo({ apiKey: publishableKey, apiUrl, clientId: typeof __PKG_NAME__ !== 'undefined' ? `${__PKG_NAME__}/${__PKG_VERSION__}` : undefined });
 
                 if (cancelled) {
                     return;

@@ -24,6 +24,7 @@ export interface FetchGeoOptions {
     apiKey?: string;
     apiUrl?: string;
     timeout?: number;
+    clientId?: string;
 }
 
 export interface CookieOptions {

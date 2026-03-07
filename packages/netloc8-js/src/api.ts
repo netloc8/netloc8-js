@@ -14,6 +14,7 @@ export async function fetchGeo(
     const apiKey = options?.apiKey ?? process.env.NETLOC8_API_KEY;
     const apiUrl = options?.apiUrl ?? process.env.NETLOC8_API_URL ?? 'https://netloc8.com';
     const timeout = options?.timeout ?? 1500;
+    const clientId = options?.clientId ?? CLIENT_ID;
 
     if (!apiKey) {
         console.warn('[netloc8] No API key provided. Set NETLOC8_API_KEY or pass apiKey in options.');
@@ -27,7 +28,7 @@ export async function fetchGeo(
             method: 'GET',
             headers: {
                 'X-API-Key': apiKey,
-                'X-NetLoc8-Client': CLIENT_ID,
+                'X-NetLoc8-Client': clientId,
                 'Accept': 'application/json',
             },
             signal: AbortSignal.timeout(timeout),
@@ -56,6 +57,7 @@ export async function fetchTimezone(
     const apiKey = options?.apiKey ?? process.env.NETLOC8_API_KEY;
     const apiUrl = options?.apiUrl ?? process.env.NETLOC8_API_URL ?? 'https://netloc8.com';
     const timeout = options?.timeout ?? 1500;
+    const clientId = options?.clientId ?? CLIENT_ID;
 
     if (!apiKey) {
         console.warn('[netloc8] No API key provided. Set NETLOC8_API_KEY or pass apiKey in options.');
@@ -69,7 +71,7 @@ export async function fetchTimezone(
             method: 'GET',
             headers: {
                 'X-API-Key': apiKey,
-                'X-NetLoc8-Client': CLIENT_ID,
+                'X-NetLoc8-Client': clientId,
                 'Accept': 'application/json',
             },
             signal: AbortSignal.timeout(timeout),
@@ -102,6 +104,7 @@ export async function fetchMyGeo(
     const apiKey = options?.apiKey ?? process.env.NETLOC8_API_KEY;
     const apiUrl = options?.apiUrl ?? process.env.NETLOC8_API_URL ?? 'https://netloc8.com';
     const timeout = options?.timeout ?? 1500;
+    const clientId = options?.clientId ?? CLIENT_ID;
 
     if (!apiKey) {
         console.warn('[netloc8] No API key provided. Set NETLOC8_API_KEY or pass apiKey in options.');
@@ -115,7 +118,7 @@ export async function fetchMyGeo(
             method: 'GET',
             headers: {
                 'X-API-Key': apiKey,
-                'X-NetLoc8-Client': CLIENT_ID,
+                'X-NetLoc8-Client': clientId,
                 'Accept': 'application/json',
             },
             signal: AbortSignal.timeout(timeout),
@@ -146,6 +149,7 @@ export async function fetchMyTimezone(
     const apiKey = options?.apiKey ?? process.env.NETLOC8_API_KEY;
     const apiUrl = options?.apiUrl ?? process.env.NETLOC8_API_URL ?? 'https://netloc8.com';
     const timeout = options?.timeout ?? 1500;
+    const clientId = options?.clientId ?? CLIENT_ID;
 
     if (!apiKey) {
         console.warn('[netloc8] No API key provided. Set NETLOC8_API_KEY or pass apiKey in options.');
@@ -159,7 +163,7 @@ export async function fetchMyTimezone(
             method: 'GET',
             headers: {
                 'X-API-Key': apiKey,
-                'X-NetLoc8-Client': CLIENT_ID,
+                'X-NetLoc8-Client': clientId,
                 'Accept': 'application/json',
             },
             signal: AbortSignal.timeout(timeout),

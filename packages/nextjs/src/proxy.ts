@@ -1,3 +1,6 @@
+declare const __PKG_NAME__: string;
+declare const __PKG_VERSION__: string;
+
 import type { Geo } from '@netloc8/netloc8-js';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
@@ -119,7 +122,7 @@ export function createProxy(options?: CreateProxyOptions):
         let apiGeo: Geo | undefined;
 
         if (clientIp && isPublicIp(clientIp) && !platformGeo.timezone && !cookieTimezone) {
-            const raw = await fetchGeo(clientIp, { apiKey, apiUrl, timeout });
+            const raw = await fetchGeo(clientIp, { apiKey, apiUrl, timeout, clientId: typeof __PKG_NAME__ !== 'undefined' ? `${__PKG_NAME__}/${__PKG_VERSION__}` : undefined });
             if (raw) {
                 apiGeo = normalizeApiResponse(raw, clientIp);
             }
