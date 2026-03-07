@@ -15,7 +15,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 - `X-NetLoc8-Client` request header on every API call, identifying SDK package and version (e.g., `@netloc8/nextjs/0.1.0`)
 - `clientId` option in `FetchGeoOptions` — allows higher-level packages to override the client identifier
 - Bun workspace monorepo scaffolding
-- 81 unit tests across all packages
+- 89 tests across all packages (81 unit + 8 integration)
 - `tsdown` build pipeline with per-package configs and `isolatedDeclarations` for fast `.d.ts` generation via `oxc-transform`
 
 ### Security

@@ -39,7 +39,7 @@ Build all packages and publish them to npm.
    bun run clean
    bun run build
    ```
-   Each package runs `tsdown` via its `tsdown.config.ts`, producing ESM `.js` + `.d.ts` files in `dist/`.
+   Each package runs `tsdown` via its `tsdown.config.ts`, producing ESM `.mjs` + `.d.mts` files in `dist/`.
 
 5. **Verify the build output:**
    ```bash
@@ -47,7 +47,7 @@ Build all packages and publish them to npm.
    ls packages/react/dist/
    ls packages/nextjs/dist/
    ```
-   Each should contain `.js` and `.d.ts` files.
+   Each should contain `.mjs` and `.d.mts` files.
 
 6. **Publish in dependency order** (core first):
    ```bash

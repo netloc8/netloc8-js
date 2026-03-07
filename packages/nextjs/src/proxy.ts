@@ -151,6 +151,9 @@ export function createProxy(options?: CreateProxyOptions):
             const sanitizedRequest = new Request(request.nextUrl.toString(), {
                 method: request.method ?? 'GET',
                 headers: requestHeaders,
+                body: request.body,
+                // @ts-expect-error -- NextRequest supports duplex but TS doesn't expose it
+                duplex: 'half',
             });
             handlerResponse = await options.handler(
                 Object.assign(sanitizedRequest, { nextUrl: request.nextUrl, cookies: request.cookies }) as NextRequest,

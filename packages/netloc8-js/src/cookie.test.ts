@@ -10,7 +10,7 @@ describe('cookie constants', () => {
     test('COOKIE_OPTIONS has correct defaults', () => {
         expect(COOKIE_OPTIONS.path).toBe('/');
         expect(COOKIE_OPTIONS.httpOnly).toBe(false);
-        expect(COOKIE_OPTIONS.secure).toBe(true);
+        expect(COOKIE_OPTIONS.secure).toBe(false); // true only in production
         expect(COOKIE_OPTIONS.sameSite).toBe('lax');
         expect(COOKIE_OPTIONS.maxAge).toBe(2_592_000);
     });

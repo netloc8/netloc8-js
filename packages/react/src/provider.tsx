@@ -23,7 +23,7 @@ function writeGeoCookie(geo: Geo): void {
     const value = serializeCookie(geo);
     const parts = [`${COOKIE_NAME}=${value}`, `path=${COOKIE_OPTIONS.path}`];
 
-    if (COOKIE_OPTIONS.secure) {
+    if (COOKIE_OPTIONS.secure && globalThis.location?.protocol === 'https:') {
         parts.push('secure');
     }
 

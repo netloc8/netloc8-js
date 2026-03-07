@@ -3,11 +3,11 @@ import type { Geo, CookieOptions } from './types';
 /** Cookie name used by the plugin. */
 export const COOKIE_NAME = '__netloc8_geo';
 
-/** Default cookie options. */
+/** Default cookie options. `secure` is disabled in development for http://localhost. */
 export const COOKIE_OPTIONS: CookieOptions = {
     path: '/',
     httpOnly: false,
-    secure: true,
+    secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
     maxAge: 2_592_000, // 30 days
 };
