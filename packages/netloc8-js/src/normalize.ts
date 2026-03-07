@@ -27,6 +27,8 @@ export function normalizeApiResponse(
         timezone: raw.timezone as string | undefined,
         accuracyRadius: raw.accuracyRadius as number | undefined,
         precision: raw.precision as string | undefined,
+        isLimited: raw.isLimited as boolean | undefined,
+        limitReason: raw.limitReason as string | undefined,
         timezoneFromClient: false,
     };
 }

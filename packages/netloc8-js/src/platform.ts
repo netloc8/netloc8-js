@@ -22,17 +22,27 @@ export function getGeoFromPlatformHeaders(headers: Headers): Partial<Geo> {
 
     const vercelCity = headers.get('x-vercel-ip-city');
     if (vercelCity !== null) {
-        geo.city = decodeURIComponent(vercelCity);
+        try {
+            geo.city = decodeURIComponent(vercelCity);
+        } catch {
+            geo.city = vercelCity;
+        }
     }
 
     const vercelLat = headers.get('x-vercel-ip-latitude');
     if (vercelLat) {
-        geo.latitude = parseFloat(vercelLat);
+        const lat = parseFloat(vercelLat);
+        if (isFinite(lat)) {
+            geo.latitude = lat;
+        }
     }
 
     const vercelLng = headers.get('x-vercel-ip-longitude');
     if (vercelLng) {
-        geo.longitude = parseFloat(vercelLng);
+        const lng = parseFloat(vercelLng);
+        if (isFinite(lng)) {
+            geo.longitude = lng;
+        }
     }
 
     const vercelTz = headers.get('x-vercel-ip-timezone');

@@ -44,17 +44,21 @@ export async function getGeo(): Promise<Geo> {
                 continue;
             }
 
-            const decoded = decodeURIComponent(raw);
+            try {
+                const decoded = decodeURIComponent(raw);
 
-            if (type === 'number') {
-                const num = parseFloat(decoded);
-                if (!isNaN(num)) {
-                    (geo as Record<string, unknown>)[field] = num;
+                if (type === 'number') {
+                    const num = parseFloat(decoded);
+                    if (!isNaN(num)) {
+                        (geo as Record<string, unknown>)[field] = num;
+                    }
+                } else if (type === 'boolean') {
+                    (geo as Record<string, unknown>)[field] = decoded === 'true';
+                } else {
+                    (geo as Record<string, unknown>)[field] = decoded;
                 }
-            } else if (type === 'boolean') {
-                (geo as Record<string, unknown>)[field] = decoded === 'true';
-            } else {
-                (geo as Record<string, unknown>)[field] = decoded;
+            } catch {
+                // Skip this header if decodeURIComponent throws
             }
         }
 

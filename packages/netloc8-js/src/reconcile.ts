@@ -30,6 +30,11 @@ export function reconcileGeo(sources: ReconcileSources): Geo {
     // Build merged geo from lowest to highest priority
     const geo: Geo = { ip };
 
+    // Layer in cookie fields (lowest priority — stale but useful fallback)
+    if (cookie) {
+        Object.assign(geo, stripUndefined(cookie));
+    }
+
     // Layer in platform headers (partial — may only have country)
     if (platform) {
         Object.assign(geo, stripUndefined(platform));

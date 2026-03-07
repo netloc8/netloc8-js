@@ -93,8 +93,10 @@ export function createProxy(options?: CreateProxyOptions):
         let clientIp: string | undefined;
 
         if (process.env.NODE_ENV !== 'production') {
-            clientIp = options?.testIp ?? process.env.NETLOC8_TEST_IP ?? '24.216.76.94';
-        } else {
+            clientIp = options?.testIp ?? process.env.NETLOC8_TEST_IP;
+        }
+
+        if (!clientIp) {
             clientIp = getClientIp(request.headers);
         }
 
@@ -102,22 +104,13 @@ export function createProxy(options?: CreateProxyOptions):
         const cookieValue = request.cookies.get(COOKIE_NAME)?.value;
         const cookieGeo = parseCookie(cookieValue);
 
-        if (
+        // Cookie fast path: only trust timezone/timezoneFromClient from the
+        // client-controlled cookie. Re-resolve other geo fields to prevent
+        // spoofing of country/region/city via cookie manipulation.
+        const cookieTimezone = (
             cookieGeo.timezoneFromClient === true &&
             cookieGeo.ip === clientIp
-        ) {
-            // Fast path — browser-confirmed timezone, same IP
-            setGeoHeaders(requestHeaders, cookieGeo as Geo);
-
-            let handlerResponse: NextResponse | undefined;
-            if (options?.handler) {
-                handlerResponse = await options.handler(request, cookieGeo as Geo);
-            }
-
-            return handlerResponse ?? NextResponse.next({
-                request: { headers: requestHeaders },
-            });
-        }
+        ) ? { timezone: cookieGeo.timezone, timezoneFromClient: cookieGeo.timezoneFromClient } : undefined;
 
         // 3. Extract platform headers (zero-cost)
         const platformGeo = getGeoFromPlatformHeaders(request.headers);
@@ -125,7 +118,7 @@ export function createProxy(options?: CreateProxyOptions):
         // 4. Decide whether to call the API
         let apiGeo: Geo | undefined;
 
-        if (clientIp && isPublicIp(clientIp) && !platformGeo.timezone) {
+        if (clientIp && isPublicIp(clientIp) && !platformGeo.timezone && !cookieTimezone) {
             const raw = await fetchGeo(clientIp, { apiKey, apiUrl, timeout });
             if (raw) {
                 apiGeo = normalizeApiResponse(raw, clientIp);
@@ -140,13 +133,26 @@ export function createProxy(options?: CreateProxyOptions):
             ip: clientIp,
         });
 
+        // Apply trusted cookie timezone if available
+        if (cookieTimezone) {
+            geo.timezone = cookieTimezone.timezone;
+            geo.timezoneFromClient = cookieTimezone.timezoneFromClient;
+        }
+
         // 6. Set request headers
         setGeoHeaders(requestHeaders, geo);
 
-        // 7. Build the response
+        // 7. Build the response — use sanitized headers in the handler
         let handlerResponse: NextResponse | undefined;
         if (options?.handler) {
-            handlerResponse = await options.handler(request, geo);
+            const sanitizedRequest = new Request(request.nextUrl.toString(), {
+                method: request.method ?? 'GET',
+                headers: requestHeaders,
+            });
+            handlerResponse = await options.handler(
+                Object.assign(sanitizedRequest, { nextUrl: request.nextUrl, cookies: request.cookies }) as NextRequest,
+                geo
+            );
         }
 
         const response = handlerResponse ?? NextResponse.next({

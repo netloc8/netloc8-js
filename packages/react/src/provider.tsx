@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import type { Geo } from '@netloc8/netloc8-js';
-import { COOKIE_NAME, fetchMyGeo, normalizeApiResponse } from '@netloc8/netloc8-js';
+import { COOKIE_NAME, COOKIE_OPTIONS, serializeCookie, fetchMyGeo, normalizeApiResponse } from '@netloc8/netloc8-js';
 import { GeoContext } from './context';
 
 interface NetLoc8ProviderProps {
@@ -11,6 +11,28 @@ interface NetLoc8ProviderProps {
     publishableKey?: string;
     apiUrl?: string;
     children: ReactNode;
+}
+
+/**
+ * Write the geo cookie using the shared COOKIE_OPTIONS constants.
+ */
+function writeGeoCookie(geo: Geo): void {
+    const value = serializeCookie(geo);
+    const parts = [`${COOKIE_NAME}=${value}`, `path=${COOKIE_OPTIONS.path}`];
+
+    if (COOKIE_OPTIONS.secure) {
+        parts.push('secure');
+    }
+
+    if (COOKIE_OPTIONS.sameSite) {
+        parts.push(`samesite=${COOKIE_OPTIONS.sameSite}`);
+    }
+
+    if (COOKIE_OPTIONS.maxAge !== undefined) {
+        parts.push(`max-age=${COOKIE_OPTIONS.maxAge}`);
+    }
+
+    document.cookie = parts.join('; ');
 }
 
 /**
@@ -46,8 +68,7 @@ export function NetLoc8Provider({ initialGeo, publishableKey, apiUrl, children }
                 if (raw) {
                     currentGeo = normalizeApiResponse(raw);
                     setGeo(currentGeo);
-
-                    document.cookie = `${COOKIE_NAME}=${encodeURIComponent(JSON.stringify(currentGeo))}; path=/; secure; samesite=lax; max-age=2592000`;
+                    writeGeoCookie(currentGeo);
                 }
             }
 
@@ -63,7 +84,7 @@ export function NetLoc8Provider({ initialGeo, publishableKey, apiUrl, children }
                             timezoneFromClient: true,
                         };
 
-                        document.cookie = `${COOKIE_NAME}=${encodeURIComponent(JSON.stringify(updatedGeo))}; path=/; secure; samesite=lax; max-age=2592000`;
+                        writeGeoCookie(updatedGeo);
                         return updatedGeo;
                     });
                 }

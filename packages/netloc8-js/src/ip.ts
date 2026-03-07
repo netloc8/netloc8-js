@@ -38,6 +38,11 @@ export function isPublicIp(ip: string): boolean {
             return false;
         }
 
+        // Validate each octet is an integer in 0-255
+        if (parts.some(p => !Number.isInteger(p) || p < 0 || p > 255)) {
+            return false;
+        }
+
         // Loopback: 127.0.0.0/8
         if (parts[0] === 127) {
             return false;
