@@ -31,7 +31,13 @@ IP-based timezone is ~95% accurate. The SDK achieves 100% by reading the browser
 The proxy intercepts requests at the edge/server, resolves geo data, and injects it as `x-netloc8-*` request headers. Server Components read these headers via `next/headers`. This avoids prop drilling and works with streaming/RSC.
 
 ### Cookie Fast Path
-If the cookie already contains browser-confirmed timezone (`timezoneFromClient: true`) and the IP hasn't changed, the proxy skips the API call entirely — zero latency added.
+If the cookie already contains browser-confirmed timezone (`timezoneFromClient: true`) and the IP hasn't changed, the proxy skips the API call. However, only `timezone`/`timezoneFromClient` are trusted from the cookie — all other geo fields are always re-resolved from platform headers or the API to prevent cookie-based spoofing.
+
+### Client-Side SPA Support (Publishable Keys)
+The `NetLoc8Provider` accepts a `publishableKey` prop for SPAs that don't have a server proxy. When provided, the provider calls `fetchMyGeo()` on mount against `GET /api/v1/ip/me` to resolve the caller's geolocation client-side.
+
+### X-NetLoc8-Client Header
+Every API request includes an `X-NetLoc8-Client` header identifying the SDK package and version (e.g., `@netloc8/nextjs/0.1.0`). The version is injected at build time via tsdown's `define` from each package's `package.json`.
 
 ### Source Reconciliation Priority
 1. Cookie with `timezoneFromClient=true` + matching IP (highest — browser-confirmed)

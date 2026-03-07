@@ -12,13 +12,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 - `@netloc8/nextjs` v0.1.0 — Next.js proxy (`createProxy`, `withGeoRedirect`), server functions (`getGeo`, `getTimezone`), and React re-exports
 - `fetchMyGeo()` and `fetchMyTimezone()` for client-side SPA usage with publishable keys (`pk_`)
 - `publishableKey` and `apiUrl` props on `NetLoc8Provider` for browser-side geo fetching
+- `X-NetLoc8-Client` request header on every API call, identifying SDK package and version (e.g., `@netloc8/nextjs/0.1.0`)
+- `clientId` option in `FetchGeoOptions` — allows higher-level packages to override the client identifier
 - Bun workspace monorepo scaffolding
 - 81 unit tests across all packages
 - `tsdown` build pipeline with per-package configs and `isolatedDeclarations` for fast `.d.ts` generation via `oxc-transform`
 
 ### Security
 - Proxy strips incoming `x-netloc8-*` headers before processing to prevent header spoofing
+- Proxy handler receives sanitized request with cleaned headers instead of original request
+- Cookie fast path now only trusts `timezone`/`timezoneFromClient` — other geo fields are always re-resolved to prevent spoofing
 - `parseCookie` now explicitly picks known `Geo` properties instead of trusting raw JSON
+- IPv4 octet validation (0–255 range check) added to `isPublicIp`
+- `decodeURIComponent` wrapped in try/catch for platform headers; `parseFloat` results guarded with `isFinite`
+- `getGeo()` per-header error handling — one malformed header no longer wipes all geo data
 
 ### Fixed
 - `NetLoc8Provider` uses functional `setGeo` updater and runs timezone reconciliation once on mount

@@ -35,3 +35,7 @@ Tests are co-located with source files: `foo.test.ts` beside `foo.ts`.
 - Use `test.skipIf()` for conditional skipping (not early returns)
 - Use `mock.module()` sparingly — it can leak across files in Bun
 - Use `mock()` to replace `globalThis.fetch` in API tests, restoring in cleanup
+
+## Build-Time Defines
+
+Some modules use `__PKG_NAME__` and `__PKG_VERSION__` globals injected by tsdown's `define` at build time. These are **not available** during test execution (tests run against source, not dist). Use `typeof __PKG_NAME__ !== 'undefined'` guards in source code to provide fallbacks for the test environment.
