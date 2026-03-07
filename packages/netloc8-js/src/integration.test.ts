@@ -76,11 +76,11 @@ describe.skipIf(SKIP)('integration: live API', () => {
             // Publishable keys require Origin header (browsers send this
             // automatically; we simulate it here for the test environment).
             const originalFetch = globalThis.fetch;
-            globalThis.fetch = (input: RequestInfo | URL, init?: RequestInit) => {
+            globalThis.fetch = ((input: RequestInfo | URL, init?: RequestInit) => {
                 const headers = new Headers(init?.headers);
                 headers.set('Origin', 'https://localhost:3000');
                 return originalFetch(input, { ...init, headers });
-            };
+            }) as typeof fetch;
 
             const raw = await fetchMyGeo({ apiKey: PK, apiUrl: API_URL, timeout: 10_000 });
             globalThis.fetch = originalFetch;
@@ -99,11 +99,11 @@ describe.skipIf(SKIP)('integration: live API', () => {
     describe.skipIf(!PK)('fetchMyTimezone (publishable key)', () => {
         test('API accepts publishable key for timezone endpoint', async () => {
             const originalFetch = globalThis.fetch;
-            globalThis.fetch = (input: RequestInfo | URL, init?: RequestInit) => {
+            globalThis.fetch = ((input: RequestInfo | URL, init?: RequestInit) => {
                 const headers = new Headers(init?.headers);
                 headers.set('Origin', 'https://localhost:3000');
                 return originalFetch(input, { ...init, headers });
-            };
+            }) as typeof fetch;
 
             const tz = await fetchMyTimezone({ apiKey: PK, apiUrl: API_URL, timeout: 10_000 });
             globalThis.fetch = originalFetch;
@@ -121,10 +121,10 @@ describe.skipIf(SKIP)('integration: live API', () => {
             const originalFetch = globalThis.fetch;
             let capturedHeaders: Headers | undefined;
 
-            globalThis.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
+            globalThis.fetch = ((input: RequestInfo | URL, init?: RequestInit) => {
                 capturedHeaders = new Headers(init?.headers);
                 return originalFetch(input, init);
-            };
+            }) as typeof fetch;
 
             await fetchGeo('8.8.8.8', { apiKey: SK, apiUrl: API_URL, timeout: 10_000 });
             globalThis.fetch = originalFetch;
