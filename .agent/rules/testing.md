@@ -39,3 +39,13 @@ Tests are co-located with source files: `foo.test.ts` beside `foo.ts`.
 ## Build-Time Defines
 
 Some modules use `__PKG_NAME__` and `__PKG_VERSION__` globals injected by tsdown's `define` at build time. These are **not available** during test execution (tests run against source, not dist). Use `typeof __PKG_NAME__ !== 'undefined'` guards in source code to provide fallbacks for the test environment.
+
+## Integration Tests
+
+`integration.test.ts` runs against a live API server and is **skipped by default**. To enable:
+
+```bash
+NETLOC8_TEST_SK=sk_... NETLOC8_TEST_PK=pk_... bun test packages/netloc8-js/src/integration.test.ts
+```
+
+Create test keys with `bun run db:seed` in the API repo.
