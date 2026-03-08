@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.1.2] — 2026-03-07
+
+### Fixed
+- Fixed proxy stripping full cookie geo data on self-hosted / non-Vercel deployments — on the cookie fast path (2nd+ request), only `ip`, `timezone`, and `timezoneFromClient` were passed to `reconcileGeo()`, discarding `city`, `country`, `region`, `latitude`, `longitude`, and all other fields; now the full cookie object is passed through (cookie remains lowest priority, overwritten by platform headers or API data when available)
+
 ## [0.1.1] — 2026-03-07
 
 ### Fixed
@@ -20,7 +25,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 - `X-NetLoc8-Client` request header on every API call, identifying SDK package and version
 - `clientId` option in `FetchGeoOptions` — allows higher-level packages to override the client identifier
 - Proxy strips incoming `x-netloc8-*` headers before processing to prevent header spoofing
-- Cookie fast path only trusts `timezone`/`timezoneFromClient` — all other geo fields are re-resolved from the API to prevent spoofing
+- Cookie geo data used as lowest-priority fallback in `reconcileGeo()` — platform headers and API responses always take precedence
 - `parseCookie` explicitly picks known `Geo` properties instead of trusting raw JSON
 - Bun workspace monorepo with `tsdown` build pipeline and `isolatedDeclarations` for fast `.d.ts` generation
 
