@@ -128,16 +128,12 @@ export function createProxy(options?: CreateProxyOptions):
             }
         }
 
-        // 5. Reconcile all sources — only pass timezone fields from cookie
-        //    to prevent client-side spoofing of location data
-        const trustedCookie = cookieGeo.ip ? {
-            ip: cookieGeo.ip,
-            timezone: cookieGeo.timezone,
-            timezoneFromClient: cookieGeo.timezoneFromClient,
-        } : undefined;
-
+        // 5. Reconcile all sources — cookie is lowest priority in
+        //    reconcileGeo, so platform headers and API data overwrite it.
+        //    Pass the full cookie so self-hosted deployments (no platform
+        //    headers, API call skipped) still have city/country/region.
         const geo = reconcileGeo({
-            cookie: trustedCookie,
+            cookie: cookieGeo.ip ? cookieGeo : undefined,
             platform: platformGeo,
             api: apiGeo,
             ip: clientIp,

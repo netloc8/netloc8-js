@@ -104,6 +104,44 @@ describe('createProxy', () => {
         globalThis.fetch = originalFetch;
     });
 
+    test('cookie fast path: preserves full geo data on self-hosted (no platform headers)', async () => {
+        let fetchCalled = false;
+        const originalFetch = globalThis.fetch;
+        globalThis.fetch = mock(() => {
+            fetchCalled = true;
+            return Promise.resolve(new Response('{}', { status: 200 }));
+        }) as unknown as typeof fetch;
+
+        const cookieGeo = JSON.stringify({
+            ip: '24.216.76.94',
+            city: 'Overland',
+            country: 'US',
+            countryName: 'United States',
+            region: 'MO',
+            regionName: 'Missouri',
+            latitude: 38.6967,
+            longitude: -90.3723,
+            timezone: 'America/Chicago',
+            timezoneFromClient: true,
+        });
+
+        const proxy = createProxy({ testIp: '24.216.76.94' });
+        const request = createMockRequest({
+            cookies: { '__netloc8_geo': encodeURIComponent(cookieGeo) },
+        });
+
+        const response = await proxy(request);
+        expect(fetchCalled).toBe(false);
+
+        // Verify full geo data flows through to request headers
+        const reqHeaders = (response as unknown as Record<string, unknown>)._requestHeaders as Headers;
+        expect(reqHeaders.get('x-netloc8-city')).toBe('Overland');
+        expect(reqHeaders.get('x-netloc8-country')).toBe('US');
+        expect(reqHeaders.get('x-netloc8-region')).toBe('MO');
+
+        globalThis.fetch = originalFetch;
+    });
+
     test('calls API when no cookie', async () => {
         let fetchCalled = false;
         const originalFetch = globalThis.fetch;
