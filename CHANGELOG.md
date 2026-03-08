@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.1.3] — 2026-03-07
+
+### Fixed
+- Fixed published `@netloc8/react` and `@netloc8/nextjs` packages containing unresolved `workspace:*` dependency references — switched from `npm publish` to `bun publish` which resolves workspace protocol automatically
+- Note: v0.1.2 is broken on npm due to this issue; use v0.1.3+
+
 ## [0.1.2] — 2026-03-07
 
 ### Fixed
