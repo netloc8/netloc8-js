@@ -76,7 +76,7 @@ import { GeoGate } from '@netloc8/nextjs';
     <CookieConsentBanner />
 </GeoGate>
 
-<GeoGate country={['US', 'CA']} not fallback={<p>Not available in your region</p>}>
+<GeoGate country={['US', 'CA']} fallback={<p>Not available in your region</p>}>
     <SpecialOffer />
 </GeoGate>
 ```

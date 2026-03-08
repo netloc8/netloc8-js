@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.1.1] — 2026-03-07
+
+### Fixed
+- Fixed `GeoGate` example in `@netloc8/react` and `@netloc8/nextjs` READMEs — removed erroneous `not` prop that inverted the intended logic
+
 ## [0.1.0] — 2026-03-07
 
 ### Added
