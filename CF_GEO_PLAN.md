@@ -142,32 +142,100 @@ new NetLoc8({
 
 ---
 
-## Accumulated API Response Changes (v1.2.0–v1.8.0)
+## API Response Shape Change (pre-launch)
 
-Backend releases have added response fields and endpoints that the SDK must
-reflect. These are already deployed but may not be in the SDK's `Geo` type:
+The backend has restructured the geo response from a flat key-value object to a
+nested shape. Since the API hasn't shipped to external consumers yet, this is a
+clean break — no backward compatibility needed, but the SDK must match.
 
-### New Geo Fields
+### Old shape (removed)
 
-| Field | Added in | Notes |
-|-------|----------|-------|
-| `continent` / `continentName` | v1.3.0 | Two-letter code + English name |
-| `isEU` | v1.3.0 | EU member state flag (from geo data, not hardcoded) |
-| `postalCode` | v1.3.0 | Postal / ZIP code |
-| `precision` | v1.3.0 | `city`, `region`, `country`, `continent`, or `none` |
-| `isLimited` / `limitReason` | v1.2.0 | Usage cap enforcement (`cap_exceeded`) |
-| `ipVersion` | v1.3.0 | 4 or 6 |
+```json
+{ "ip": "8.8.8.8", "country": "US", "countryName": "United States", "isEU": false, ... }
+```
 
-> These are already in `INTERNAL_SPEC.md`'s `Geo` interface — confirming they
-> need to ship with the first SDK release.
+### New shape
 
-### New Endpoints
+```json
+{
+    "query":    { "type": "ip", "value": "8.8.8.8", "ipVersion": 4 },
+    "location": {
+        "continent": { "code": "NA", "name": "North America" },
+        "country":   { "code": "US", "name": "United States", "flag": "🇺🇸", "unions": ["EU"] },
+        "region":    { "code": "CA", "name": "California" },
+        "district":  { "code": "...", "name": "..." },
+        "city":      "Mountain View",
+        "postalCode": "94043",
+        "coordinates": { "latitude": 37.386, "longitude": -122.084, "accuracyRadius": 621 },
+        "timezone":    "America/Los_Angeles",
+        "utcOffset":   "-07:00",
+        "geoConfidence": 1.0
+    },
+    "network":  { "asn": "AS15169", "organization": "Google LLC", "domain": "google.com" },
+    "sources":  { "geo": ["dbip", "ip2location"], "asn": ["ipinfo"], "tz": ["derived"] },
+    "meta":     { "precision": "city", "tier": "free", "requestId": "uuid", "degraded": false }
+}
+```
 
-| Endpoint | Added in | SDK exposure |
-|----------|----------|--------------|
-| `GET /v1/ip/me/timezone` | v1.3.0 | `fetchMyTimezone()` — already planned |
-| `GET /v1/account/me/audit` | v1.8.0 | Optional — expose as `fetchAuditLog()` for dashboard SDK users |
-| `GET /.well-known/openapi.json` | v1.6.0 | Not SDK-facing, but useful for SDK validation/codegen |
+### Key changes the SDK must handle
+
+| Old | New | Notes |
+|-----|-----|-------|
+| `ip`, `ipVersion` (top-level) | `query.value`, `query.ipVersion` | Wrapped in `query` object |
+| `country` (string) | `location.country.code` | Now nested |
+| `countryName` | `location.country.name` | Now nested |
+| `isEU` (boolean) | `location.country.unions` (array) | `["EU"]` or omitted |
+| `region` / `regionName` | `location.region.code` / `.name` | Now nested |
+| `latitude`, `longitude` | `location.coordinates.latitude`, `.longitude` | Now nested |
+| `accuracyRadius` (top-level) | `location.coordinates.accuracyRadius` | Now nested |
+| `asn`, `asnOrg`, `asnDomain` | `network.asn`, `.organization`, `.domain` | Renamed + nested |
+| `sources.geo` (string) | `sources.geo` (string array) | Multiple providers possible |
+| `geoConfidence` (boolean) | `location.geoConfidence` (number 0.0–1.0) | Numeric score |
+| `precision` (top-level) | `meta.precision` | Moved to `meta` |
+| `isLimited` / `limitReason` | `meta.degraded` (boolean) | Simplified |
+| *(new)* | `location.country.flag` | Emoji flag |
+| *(new)* | `location.utcOffset` | e.g. `"-07:00"` |
+| *(new)* | `location.district` | Subdivision 2 when available |
+| *(new)* | `meta.tier` | Plan tier for the request |
+| *(new)* | `meta.requestId` | UUID per request |
+
+### Error responses
+
+All endpoints (geo, account, billing, telemetry) now use a unified `ApiError`
+envelope. Geo endpoints additionally include a `query` echo:
+
+```json
+{
+    "query": { "type": "ip", "value": "not-an-ip" },
+    "error": { "code": "INVALID_IP", "message": "Invalid IP address format" },
+    "meta":  { "requestId": "uuid" }
+}
+```
+
+Error codes include: `INVALID_IP`, `FORBIDDEN`, `UNAUTHORIZED`, `NOT_FOUND`,
+`VALIDATION_ERROR`, `BAD_REQUEST`, `INTERNAL_ERROR`, `SERVICE_UNAVAILABLE`,
+`RATE_LIMIT_EXCEEDED`, `PAYLOAD_TOO_LARGE`.
+
+### SDK impact
+
+- **`types.ts`**: The `Geo` interface needs a complete rewrite — nested `query`,
+  `location`, `network`, `sources`, `meta` types replace all flat fields.
+- **`normalize.ts`**: Field mapping must use the new paths (`response.location.country.code`
+  instead of `response.country`).
+- **`api.ts`**: Error handling must parse `response.error.code` / `.message` instead
+  of `response.error` (string).
+- **React components**: `GeoGate`, any code reading `geo.country` must read
+  `geo.location.country.code`.
+- Null fields are **omitted** (not sent as `null`). The SDK should use optional
+  chaining or default values.
+
+### New endpoints (unchanged)
+
+| Endpoint | SDK exposure |
+|----------|--------------|
+| `GET /v1/ip/me/timezone` | `fetchMyTimezone()` — already planned |
+| `GET /v1/account/me/audit` | Optional — `fetchAuditLog()` |
+| `GET /.well-known/openapi.json` | Not SDK-facing |
 
 ---
 
