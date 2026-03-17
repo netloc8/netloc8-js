@@ -1,6 +1,6 @@
 {
     "name": "@netloc8/nextjs",
-    "version": "1.0.1",
+    "version": "1.1.0",
     "description": "Next.js geolocation plugin. Server-side proxy, getGeo() for Server Components, useGeo() hook, GeoGate, and locale-based redirects.",
     "keywords": [
         "nextjs",
