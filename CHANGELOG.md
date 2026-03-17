@@ -4,13 +4,16 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project adheres to [Semantic Versioning](https://semver.org/).
 
-## [Unreleased]
 
 ## [0.2.0] — 2026-03-17
 
 ### Changed
 - **Renamed `@netloc8/netloc8-js` → `@netloc8/core`** — the core package name no longer duplicates the scope; import from `@netloc8/core` going forward
 - Bumped all packages (`@netloc8/core`, `@netloc8/react`, `@netloc8/nextjs`) to v0.2.0
+
+### Fixed
+- Exported `GeoGateProps` interface from `@netloc8/react` for external use
+- Added missing `@types/react-dom` dev dependency
 
 ## [0.1.3] — 2026-03-07
 
