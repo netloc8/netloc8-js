@@ -34,7 +34,7 @@ pass it as `geo`. The Provider only reconciles the browser timezone:
 ```tsx
 import { NetLoc8Provider, useGeo } from '@netloc8/react';
 
-function App( { serverGeo } ) {
+function App({ serverGeo }) {
     return (
         <NetLoc8Provider geo={serverGeo}>
             <LocationBanner />

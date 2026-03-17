@@ -33,7 +33,7 @@ client component. Get your API key from the [NetLoc8 dashboard](https://netloc8.
 // app/layout.tsx
 import { NetLoc8Provider } from '@netloc8/nextjs';
 
-export default function RootLayout( { children } ) {
+export default function RootLayout({ children }) {
     return (
         <html>
             <body>
@@ -109,7 +109,7 @@ To make SSR geo data available in client components, pass it to the Provider:
 import { getGeo } from '@netloc8/nextjs/server';
 import { NetLoc8Provider } from '@netloc8/nextjs';
 
-export default async function RootLayout( { children } ) {
+export default async function RootLayout({ children }) {
     const geo = await getGeo();
 
     return (
@@ -145,8 +145,8 @@ import { GeoGate } from '@netloc8/nextjs';
 ```typescript
 import { createProxy, withGeoRedirect } from '@netloc8/nextjs/proxy';
 
-export default createProxy( {
-    handler: withGeoRedirect( {
+export default createProxy({
+    handler: withGeoRedirect({
         defaultLocale: 'en',
         localeMap: {
             'DE': 'de',
@@ -154,8 +154,8 @@ export default createProxy( {
             'ES': 'es',
         },
         excludePaths: ['/api', '/_next'],
-    } ),
-} );
+    }),
+});
 ```
 
 ## Preventing Content Shift
@@ -211,7 +211,7 @@ geo.meta?.precision;              // "city"
 ```typescript
 import { isEU } from '@netloc8/nextjs';
 
-if ( isEU( geo ) ) {
+if (isEU(geo)) {
     showCookieConsent();
 }
 ```

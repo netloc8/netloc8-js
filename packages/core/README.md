@@ -36,12 +36,12 @@ No IP address needed; the API detects the caller's IP automatically:
 ```typescript
 import { fetchMyGeo } from '@netloc8/core';
 
-const geo = await fetchMyGeo( { apiKey: 'pk_...' } );
+const geo = await fetchMyGeo({ apiKey: 'pk_...' });
 
-console.log( geo.location?.country?.code );  // "US"
-console.log( geo.location?.city );           // "Mountain View"
-console.log( geo.location?.timezone );       // "America/Los_Angeles"
-console.log( geo.network?.organization );    // "Google LLC"
+console.log(geo.location?.country?.code);  // "US"
+console.log(geo.location?.city);           // "Mountain View"
+console.log(geo.location?.timezone);       // "America/Los_Angeles"
+console.log(geo.network?.organization);    // "Google LLC"
 ```
 
 ### Get only the timezone (browser)
@@ -49,9 +49,9 @@ console.log( geo.network?.organization );    // "Google LLC"
 ```typescript
 import { fetchMyTimezone } from '@netloc8/core';
 
-const tz = await fetchMyTimezone( { apiKey: 'pk_...' } );
+const tz = await fetchMyTimezone({ apiKey: 'pk_...' });
 
-console.log( tz ); // "America/Chicago"
+console.log(tz); // "America/Chicago"
 ```
 
 ### Look up a specific IP (server-side)
@@ -59,12 +59,12 @@ console.log( tz ); // "America/Chicago"
 ```typescript
 import { fetchGeo } from '@netloc8/core';
 
-const geo = await fetchGeo( '203.0.113.42', {
+const geo = await fetchGeo('203.0.113.42', {
     apiKey: 'sk_...',
-} );
+});
 
-console.log( geo.location?.country?.code );  // "US"
-console.log( geo.location?.city );           // "Mountain View"
+console.log(geo.location?.country?.code);  // "US"
+console.log(geo.location?.city);           // "Mountain View"
 ```
 
 ### Error handling
@@ -75,12 +75,12 @@ logged to the console with structured codes when available:
 ```typescript
 import { fetchGeo } from '@netloc8/core';
 
-const geo = await fetchGeo( '203.0.113.42', { apiKey: process.env.NETLOC8_API_KEY } );
+const geo = await fetchGeo('203.0.113.42', { apiKey: process.env.NETLOC8_API_KEY });
 
-if ( !geo ) {
+if (!geo) {
     // fetchGeo logged the error, e.g.:
     // [netloc8] Geo lookup failed for 203.0.113.42: INVALID_IP — Invalid IP address format (HTTP 400)
-    console.log( 'Geo lookup failed' );
+    console.log('Geo lookup failed');
 }
 ```
 
@@ -146,7 +146,7 @@ The SDK provides an `isEU()` helper for GDPR / cookie consent checks:
 ```typescript
 import { isEU } from '@netloc8/core';
 
-if ( isEU( geo ) ) {
+if (isEU(geo)) {
     showCookieConsent();
 }
 ```
@@ -175,10 +175,10 @@ The SDK includes a RUM beacon module at `@netloc8/core/telemetry/rum`:
 import { initRum } from '@netloc8/core/telemetry/rum';
 
 // Start collecting — typically called once at app init
-const stop = initRum( {
+const stop = initRum({
     endpoint: 'https://api.netloc8.com/v1/telemetry/rum',
     sampleRate: 1.0,
-} );
+});
 ```
 
 Collects:

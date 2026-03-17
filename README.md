@@ -56,7 +56,7 @@ See each package's README for detailed usage instructions.
 All packages return a nested `Geo` object matching the API's `GeolocationResult`:
 
 ```typescript
-const geo = await fetchGeo( '8.8.8.8', { apiKey: 'sk_...' } );
+const geo = await fetchGeo('8.8.8.8', { apiKey: 'sk_...' });
 
 geo.query?.value;                 // "8.8.8.8"
 geo.query?.ipVersion;             // 4
