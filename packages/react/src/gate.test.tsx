@@ -2,12 +2,13 @@ import { describe, test, expect } from 'bun:test';
 import React from 'react';
 import { renderToString } from 'react-dom/server';
 import { GeoGate } from './gate';
-import { GeoContext } from './context';
+import { GeoContext, type GeoContextValue } from './context';
 import type { Geo } from '@netloc8/core';
 
-function renderWithGeo(geo: Geo, element: React.ReactElement): string {
+function renderWithGeo(geo: Geo, element: React.ReactElement, isLoading = false, error: Error | null = null): string {
+    const value: GeoContextValue = { geo, isLoading, error };
     return renderToString(
-        React.createElement(GeoContext.Provider, { value: geo }, element)
+        React.createElement(GeoContext.Provider, { value }, element)
     );
 }
 
@@ -112,5 +113,48 @@ describe('GeoGate', () => {
         );
         expect(html).not.toContain('US content');
         expect(html).toContain('fallback');
+    });
+
+    // --- Loading state tests ---
+
+    test('renders loading content while isLoading is true', () => {
+        const html = renderWithGeo({},
+            React.createElement(GeoGate, { country: 'US', loading: React.createElement('span', null, 'Loading...') }, 'US content'),
+            true,
+        );
+        expect(html).toContain('Loading...');
+        expect(html).not.toContain('US content');
+    });
+
+    test('renders nothing while loading if no loading prop', () => {
+        const html = renderWithGeo({},
+            React.createElement(GeoGate, { country: 'US', fallback: React.createElement('span', null, 'fallback') }, 'US content'),
+            true,
+        );
+        expect(html).not.toContain('US content');
+        expect(html).not.toContain('fallback');
+    });
+
+    test('does not render loading content when isLoading is false', () => {
+        const html = renderWithGeo(usGeo,
+            React.createElement(GeoGate, { country: 'US', loading: React.createElement('span', null, 'Loading...') }, 'US content'),
+            false,
+        );
+        expect(html).not.toContain('Loading...');
+        expect(html).toContain('US content');
+    });
+
+    test('renders fallback (not loading) when loaded but conditions fail', () => {
+        const html = renderWithGeo(usGeo,
+            React.createElement(GeoGate, {
+                country: 'DE',
+                loading: React.createElement('span', null, 'Loading...'),
+                fallback: React.createElement('span', null, 'Not DE'),
+            }, 'DE content'),
+            false,
+        );
+        expect(html).not.toContain('Loading...');
+        expect(html).not.toContain('DE content');
+        expect(html).toContain('Not DE');
     });
 });

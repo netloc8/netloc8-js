@@ -7,6 +7,8 @@ export interface GeoGateProps {
     children: React.ReactNode;
     /** Fallback content when gate conditions are not met. */
     fallback?: React.ReactNode;
+    /** Content to render while geo data is still loading. */
+    loading?: React.ReactNode;
     /** Match country code (ISO 3166-1 alpha-2, e.g. "US"). */
     country?: string | string[];
     /** Match region code (ISO 3166-2 subdivision, e.g. "CA"). */
@@ -35,20 +37,29 @@ function matches(value: string | undefined, criteria: string | string[] | undefi
  *
  * All specified props must match (logical AND). Omitted props are ignored.
  *
+ * While geo data is loading, renders the `loading` prop (or nothing).
+ * Once loaded, evaluates conditions and renders `children` or `fallback`.
+ *
  * @example
- * <GeoGate country="US" region="CA">
+ * <GeoGate country="US" region="CA" loading={<Skeleton />}>
  *   <p>California only</p>
  * </GeoGate>
  */
 export function GeoGate({
     children,
     fallback = null,
+    loading: loadingContent = null,
     country,
     region,
     city,
     eu,
 }: GeoGateProps): React.ReactNode {
-    const geo = useGeo();
+    const { geo, isLoading } = useGeo();
+
+    // While loading, show loading content instead of flashing fallback
+    if (isLoading) {
+        return <>{loadingContent}</>;
+    }
 
     const countryMatch = matches(geo.location?.country?.code, country);
     const regionMatch = matches(geo.location?.region?.code, region);
