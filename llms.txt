@@ -1,0 +1,51 @@
+# NetLoc8 JavaScript SDK
+
+> IP geolocation SDK for JavaScript, React, and Next.js. Detect visitor country, city, timezone, coordinates, ASN, and EU membership.
+
+## Packages
+
+- [@netloc8/core](https://github.com/netloc8/netloc8-js/tree/main/packages/core): API client for any JavaScript runtime (Node.js, Bun, Deno, Cloudflare Workers, browser)
+- [@netloc8/react](https://github.com/netloc8/netloc8-js/tree/main/packages/react): React Provider, useGeo() hook, and GeoGate component for conditional rendering by location
+- [@netloc8/nextjs](https://github.com/netloc8/netloc8-js/tree/main/packages/nextjs): Next.js server-side proxy, getGeo() for Server Components, locale-based redirects
+
+## Documentation
+
+- [Core README](https://github.com/netloc8/netloc8-js/blob/main/packages/core/README.md): API client usage, response shape, EU detection, browser signals, RUM telemetry
+- [React README](https://github.com/netloc8/netloc8-js/blob/main/packages/react/README.md): Provider setup, useGeo() hook, GeoGate component, loading states
+- [Next.js README](https://github.com/netloc8/netloc8-js/blob/main/packages/nextjs/README.md): Proxy setup, Server Components, SSR geo data, locale redirects
+- [Changelog](https://github.com/netloc8/netloc8-js/blob/main/CHANGELOG.md): Version history and breaking changes
+
+## Key Concepts
+
+- **Direct mode**: Browser calls the NetLoc8 edge API using a publishable key (pk_). Fastest option for SPAs.
+- **Proxy mode**: Server resolves geo data before rendering. Best for SEO and first-paint accuracy.
+- **GeoGate**: React component for conditional rendering by country, region, city, or EU membership.
+- **isEU()**: Helper function to check EU membership for GDPR/cookie consent.
+- **Cookie caching**: After first lookup, geo data is cached in __netloc8 cookie. Subsequent visits use cached data.
+- **Browser timezone reconciliation**: IP-based timezone on first request, browser-confirmed on hydration.
+
+## Quick Start
+
+Install: `bun add @netloc8/nextjs` (or `@netloc8/react` or `@netloc8/core`)
+
+Simplest usage (React/Next.js):
+```tsx
+<NetLoc8Provider apiKey="pk_...">
+    <App />
+</NetLoc8Provider>
+```
+
+Access geo data:
+```tsx
+const { geo, isLoading, error } = useGeo();
+geo.location?.country?.code;  // "US"
+geo.location?.city;           // "Mountain View"
+geo.location?.timezone;       // "America/Los_Angeles"
+```
+
+Conditional rendering:
+```tsx
+<GeoGate eu={true}>
+    <CookieConsentBanner />
+</GeoGate>
+```

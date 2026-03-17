@@ -25,14 +25,14 @@ This is a **TypeScript** monorepo. The user's global preference for ESNext JavaS
 
 | Package | Path | Purpose |
 |---------|------|---------|
-| `@netloc8/netloc8-js` | `packages/netloc8-js/` | Zero-dep, framework-agnostic core (API client, IP detection, cookies, types) |
+| `@netloc8/core` | `packages/core/` | Zero-dep, framework-agnostic core (API client, IP detection, cookies, types) |
 | `@netloc8/react` | `packages/react/` | React context, Provider, `useGeo()` hook, `<GeoGate>` component |
 | `@netloc8/nextjs` | `packages/nextjs/` | Next.js 16+ proxy, server functions, re-exports `@netloc8/react` |
 
 ## Dependency Chain
 
 ```
-@netloc8/netloc8-js  ← zero deps
+@netloc8/core  ← zero deps
        ↑
 @netloc8/react       ← peerDep: react
        ↑

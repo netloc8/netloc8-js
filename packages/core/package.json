@@ -1,6 +1,34 @@
 {
     "name": "@netloc8/core",
-    "version": "0.2.0",
+    "version": "1.0.0",
+    "description": "IP geolocation API client for JavaScript. Look up country, city, timezone, coordinates, ASN, and EU membership for any IP address.",
+    "keywords": [
+        "geolocation",
+        "ip-geolocation",
+        "geoip",
+        "ip-lookup",
+        "ip-address",
+        "ip-location",
+        "location-detection",
+        "timezone",
+        "country",
+        "city",
+        "coordinates",
+        "eu-detection",
+        "gdpr",
+        "asn",
+        "geo-blocking",
+        "web-vitals",
+        "rum",
+        "telemetry",
+        "netloc8"
+    ],
+    "homepage": "https://netloc8.com",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/netloc8/netloc8-js",
+        "directory": "packages/core"
+    },
     "type": "module",
     "license": "Elastic-2.0",
     "exports": {
@@ -8,6 +36,11 @@
             "bun": "./src/index.ts",
             "import": "./dist/index.mjs",
             "types": "./dist/index.d.mts"
+        },
+        "./telemetry/rum": {
+            "bun": "./src/telemetry/rum.ts",
+            "import": "./dist/telemetry/rum.mjs",
+            "types": "./dist/telemetry/rum.d.mts"
         }
     },
     "files": [
@@ -17,6 +50,9 @@
         "build": "tsdown",
         "clean": "rm -rf dist",
         "test": "bun test src/"
+    },
+    "dependencies": {
+        "web-vitals": "^4.2.4"
     },
     "engines": {
         "node": ">=18"

@@ -2,76 +2,57 @@
 description: Build and publish packages to npm
 ---
 
+// turbo-all
+
 # Workflow: Publish
 
-Build all packages and publish them to npm.
+Build and publish all packages to npm. This workflow handles only the build and publish steps — use `/release` for the full release ceremony (version bumping, CHANGELOG, tagging, GitHub release).
 
 ## Prerequisites
 
 - All tests must pass: `bun test packages/`
-- CHANGELOG.md must be updated with the new version
-- You must be on the `main` branch (or a release branch)
-- `NPM_TOKEN` must be set (or `npm login` completed)
+- You must be on `main` with the release commit already merged
+- **Always use `bun publish`**, never `npm publish` — npm does not resolve `workspace:*` dependencies correctly in this monorepo
+- Authentication: `bun publish` automatically uses the auth token from `~/.npmrc` (no `bun login` needed)
 
 ## Steps
 
-1. **Verify tests pass:**
+1. **Run tests:**
    ```bash
    bun test packages/
    ```
 
-2. **Bump versions** across all three packages. They share the same version number:
-   ```bash
-   # Update version in each package.json
-   # packages/netloc8-js/package.json
-   # packages/react/package.json
-   # packages/nextjs/package.json
-   # Also update the root package.json
-   ```
-   Use the same version for all packages to keep the dependency chain simple.
-
-3. **Update CHANGELOG.md:**
-   - Move items from `[Unreleased]` into a new version section
-   - Add the release date
-
-4. **Clean and build all packages** (uses `tsdown` per package):
+2. **Clean and build all packages:**
    ```bash
    bun run clean
    bun run build
    ```
    Each package runs `tsdown` via its `tsdown.config.ts`, producing ESM `.mjs` + `.d.mts` files in `dist/`.
 
-5. **Verify the build output:**
+3. **Verify the build output:**
    ```bash
-   ls packages/netloc8-js/dist/
+   ls packages/core/dist/
    ls packages/react/dist/
    ls packages/nextjs/dist/
    ```
    Each should contain `.mjs` and `.d.mts` files.
 
-6. **Publish in dependency order** (core first):
+4. **Dry run first** to verify package contents:
    ```bash
-   cd packages/netloc8-js && bun publish --access public
-   cd packages/react && bun publish --access public
-   cd packages/nextjs && bun publish --access public
+   cd packages/core && bun publish --dry-run && cd -
+   cd packages/react && bun publish --dry-run && cd -
+   cd packages/nextjs && bun publish --dry-run && cd -
    ```
 
-7. **Commit and tag:**
+5. **Publish in dependency order** (core first):
    ```bash
-   git add -A
-   git commit -m 'chore: release v<version>'
-   git tag v<version>
-   git push && git push --tags
-   ```
-
-8. **Create a GitHub release** from the tag:
-   ```bash
-   gh release create v<version> --title "v<version>" --notes "<changelog entry>"
+   cd packages/core && bun publish --access public && cd -
+   cd packages/react && bun publish --access public && cd -
+   cd packages/nextjs && bun publish --access public && cd -
    ```
 
 ## Guidelines
 
-- **Always publish in order:** `netloc8-js` → `react` → `nextjs`. The dependency chain requires this.
+- **Always publish in order:** `core` → `react` → `nextjs`. The dependency chain requires this.
 - **Version lock:** All three packages use the same version number.
-- **Dry run first:** Use `bun publish --dry-run` to verify package contents before the real publish.
 - **Clean before build:** tsdown configs have `clean: true`, but run `bun run clean` manually for safety.

@@ -4,7 +4,7 @@ import { defineConfig } from 'tsdown';
 const pkg = JSON.parse(readFileSync('./package.json', 'utf-8'));
 
 export default defineConfig({
-    entry: ['./src/index.ts'],
+    entry: ['./src/index.ts', './src/telemetry/rum.ts'],
     format: 'esm',
     dts: true,
     clean: true,

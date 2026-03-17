@@ -14,7 +14,7 @@ Bun runs TypeScript natively, so no compilation step is required before testing.
 bun run test
 
 # Per-package
-bun test packages/netloc8-js/src/
+bun test packages/core/src/
 bun test packages/react/src/
 bun test packages/nextjs/src/
 ```
@@ -25,7 +25,7 @@ Tests are co-located with source files: `foo.test.ts` beside `foo.ts`.
 
 | Package | Tests |
 |---------|-------|
-| `@netloc8/netloc8-js` | `api.test.ts`, `ip.test.ts`, `platform.test.ts`, `cookie.test.ts`, `normalize.test.ts`, `reconcile.test.ts` |
+| `@netloc8/core` | `api.test.ts`, `ip.test.ts`, `platform.test.ts`, `cookie.test.ts`, `normalize.test.ts`, `reconcile.test.ts` |
 | `@netloc8/react` | `gate.test.tsx` |
 | `@netloc8/nextjs` | `server.test.ts`, `proxy.test.ts` |
 
@@ -45,7 +45,7 @@ Some modules use `__PKG_NAME__` and `__PKG_VERSION__` globals injected by tsdown
 `integration.test.ts` runs against a live API server and is **skipped by default**. To enable:
 
 ```bash
-NETLOC8_TEST_SK=sk_... NETLOC8_TEST_PK=pk_... bun test packages/netloc8-js/src/integration.test.ts
+NETLOC8_TEST_SK=sk_... NETLOC8_TEST_PK=pk_... bun test packages/core/src/integration.test.ts
 ```
 
 Create test keys in the API dashboard or backend.

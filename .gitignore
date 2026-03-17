@@ -30,6 +30,5 @@ Thumbs.db
 npm-debug.log*
 
 # Internal / private docs
-CF_GEO_PLAN.md
 INTERNAL_SPEC.md
 REVIEW.md

@@ -9,9 +9,8 @@ describe('fetchGeo', () => {
 
     test('returns geo data on success', async () => {
         const mockResponse = {
-            ip: '8.8.8.8',
-            country: 'US',
-            city: 'Mountain View',
+            query: { type: 'ip', value: '8.8.8.8', ipVersion: 4 },
+            location: { country: { code: 'US' }, city: 'Mountain View' },
         };
 
         const originalFetch = globalThis.fetch;
@@ -56,6 +55,22 @@ describe('fetchGeo', () => {
         expect(result).toBeNull();
     });
 
+    test('uses new /v1/ path prefix (not /api/v1/)', async () => {
+        const originalFetch = globalThis.fetch;
+        let capturedUrl = '';
+
+        globalThis.fetch = mock((url: string | URL | Request) => {
+            capturedUrl = url as string;
+            return Promise.resolve(new Response('{}', { status: 200 }));
+        }) as unknown as typeof fetch;
+
+        await fetchGeo('1.2.3.4');
+
+        expect(capturedUrl).toBe('https://api.netloc8.com/v1/ip/1.2.3.4');
+
+        globalThis.fetch = originalFetch;
+    });
+
     test('uses custom apiKey and apiUrl', async () => {
         const originalFetch = globalThis.fetch;
         let capturedUrl = '';
@@ -74,8 +89,50 @@ describe('fetchGeo', () => {
             apiUrl: 'https://custom.api.com',
         });
 
-        expect(capturedUrl).toBe('https://custom.api.com/api/v1/ip/1.2.3.4');
+        expect(capturedUrl).toBe('https://custom.api.com/v1/ip/1.2.3.4');
         expect(capturedHeaders['X-API-Key']).toBe('sk_custom');
+
+        globalThis.fetch = originalFetch;
+    });
+
+    test('sends X-NL8-TZ browser validation header when Intl is available', async () => {
+        const originalFetch = globalThis.fetch;
+        const originalWindow = globalThis.window;
+        let capturedHeaders: Record<string, string> = {};
+
+        // Mock window so getTimezone() detects a browser environment
+        // @ts-expect-error — minimal mock
+        globalThis.window = {};
+
+        globalThis.fetch = mock((_url: string | URL | Request, init?: RequestInit) => {
+            capturedHeaders = Object.fromEntries(
+                (init?.headers as Headers)?.entries?.() ?? Object.entries(init?.headers ?? {})
+            );
+            return Promise.resolve(new Response('{}', { status: 200 }));
+        }) as unknown as typeof fetch;
+
+        await fetchGeo('8.8.8.8');
+
+        // Intl is available in Bun, and window is now mocked, so this should be present
+        expect(capturedHeaders['X-NL8-TZ']).toBeDefined();
+        expect(typeof capturedHeaders['X-NL8-TZ']).toBe('string');
+
+        globalThis.fetch = originalFetch;
+        globalThis.window = originalWindow;
+    });
+
+    test('encodes IP address in URL', async () => {
+        const originalFetch = globalThis.fetch;
+        let capturedUrl = '';
+
+        globalThis.fetch = mock((url: string | URL | Request) => {
+            capturedUrl = url as string;
+            return Promise.resolve(new Response('{}', { status: 200 }));
+        }) as unknown as typeof fetch;
+
+        await fetchGeo('2001:4860:4860::8888');
+
+        expect(capturedUrl).toContain(encodeURIComponent('2001:4860:4860::8888'));
 
         globalThis.fetch = originalFetch;
     });
@@ -116,6 +173,21 @@ describe('fetchTimezone', () => {
         const result = await fetchTimezone('8.8.8.8');
         expect(result).toBeNull();
     });
+
+    test('uses /v1/ip/.../timezone path', async () => {
+        const originalFetch = globalThis.fetch;
+        let capturedUrl = '';
+
+        globalThis.fetch = mock((url: string | URL | Request) => {
+            capturedUrl = url as string;
+            return Promise.resolve(new Response(JSON.stringify('America/Chicago'), { status: 200 }));
+        }) as unknown as typeof fetch;
+
+        await fetchTimezone('8.8.8.8');
+        expect(capturedUrl).toBe('https://api.netloc8.com/v1/ip/8.8.8.8/timezone');
+
+        globalThis.fetch = originalFetch;
+    });
 });
 
 describe('fetchMyGeo', () => {
@@ -126,9 +198,8 @@ describe('fetchMyGeo', () => {
 
     test('returns geo data on success', async () => {
         const mockResponse = {
-            ip: '24.216.76.94',
-            country: 'US',
-            city: 'Dallas',
+            query: { type: 'ip', value: '24.216.76.94', ipVersion: 4 },
+            location: { country: { code: 'US' }, city: 'Dallas' },
         };
 
         const originalFetch = globalThis.fetch;
@@ -140,7 +211,7 @@ describe('fetchMyGeo', () => {
 
         const result = await fetchMyGeo();
         expect(result).toEqual(mockResponse);
-        expect(capturedUrl).toBe('https://netloc8.com/api/v1/ip/me');
+        expect(capturedUrl).toBe('https://api.netloc8.com/v1/ip/me');
 
         globalThis.fetch = originalFetch;
     });
@@ -182,7 +253,7 @@ describe('fetchMyGeo', () => {
             apiUrl: 'https://custom.api.com',
         });
 
-        expect(capturedUrl).toBe('https://custom.api.com/api/v1/ip/me');
+        expect(capturedUrl).toBe('https://custom.api.com/v1/ip/me');
         expect(capturedHeaders['X-API-Key']).toBe('pk_custom');
 
         globalThis.fetch = originalFetch;
@@ -204,7 +275,7 @@ describe('fetchMyTimezone', () => {
 
         const result = await fetchMyTimezone();
         expect(result).toBe('America/Chicago');
-        expect(capturedUrl).toBe('https://netloc8.com/api/v1/ip/me/timezone');
+        expect(capturedUrl).toBe('https://api.netloc8.com/v1/ip/me/timezone');
 
         globalThis.fetch = originalFetch;
     });
