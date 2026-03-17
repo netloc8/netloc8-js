@@ -8,7 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 ## [1.0.0] — 2026-03-17
 
 ### ⚠️ Breaking Changes
-- **Nested `Geo` interface** — flat fields replaced with nested structure matching the backend `GeolocationResult` schema (e.g. `geo.country` → `geo.location?.country?.code`, `geo.isEU` → `geo.location?.country?.unions?.includes('EU')`)
+- **Nested `Geo` interface** — flat fields replaced with nested structure matching the API response schema (e.g. `geo.country` → `geo.location?.country?.code`, `geo.isEU` → `geo.location?.country?.unions?.includes('EU')`)
 - **API URL** — default changed from `https://netloc8.com` to `https://api.netloc8.com`
 - **API paths** — `/api/v1/ip/...` → `/v1/ip/...`
 - **`GeoGate` props** — `country`, `region`, `city`, `eu` now read from nested paths
@@ -30,7 +30,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ### Removed
 - Flat `Geo` interface fields (`country`, `countryName`, `isEU`, `ip`, `latitude`, etc.)
-- `CF_GEO_PLAN.md` — implementation complete, deferred items tracked in backend `docs/SDK_ROADMAP.md`
 
 ## [0.2.0] — 2026-03-17
 
