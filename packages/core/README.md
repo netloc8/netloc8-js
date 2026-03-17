@@ -1,12 +1,21 @@
 # @netloc8/core
 
-Zero-dependency core library for the NetLoc8 geolocation SDK. Provides the
-API client, IP detection, platform header parsing, cookie management,
-and geo-source reconciliation.
+[![npm version](https://img.shields.io/npm/v/@netloc8/core)](https://www.npmjs.com/package/@netloc8/core)
+[![npm downloads](https://img.shields.io/npm/dm/@netloc8/core)](https://www.npmjs.com/package/@netloc8/core)
+[![License: ELv2](https://img.shields.io/badge/license-ELv2-blue)](../../LICENSE)
 
-> **Tip:** If you're using Next.js, install [`@netloc8/nextjs`](../nextjs/)
-> instead — it re-exports everything from this package. For React SPAs,
-> see [`@netloc8/react`](../react/).
+IP geolocation API client for **JavaScript**, **TypeScript**, and **Node.js**.
+Look up any IP address to get country, city, region, timezone, coordinates,
+ASN, and EU membership — with structured error handling and built-in
+browser signal collection.
+
+Works in Node.js, Bun, Deno, Cloudflare Workers, and the browser. For
+framework-specific integrations, see
+[`@netloc8/react`](../react/) or [`@netloc8/nextjs`](../nextjs/).
+> **Tip:** Using a specific framework? Install the framework package instead
+> (e.g. [`@netloc8/nextjs`](../nextjs/) for Next.js, [`@netloc8/react`](../react/)
+> for React SPAs) — they re-export everything from this package and add
+> framework-specific helpers.
 
 ## Install
 
@@ -16,7 +25,33 @@ bun add @netloc8/core
 
 ## Usage
 
-### Fetch geo data for an IP
+### Detect the visitor's location (browser)
+
+The simplest way to get started — call `fetchMyGeo()` with a publishable key.
+No IP address needed; the API detects the caller's IP automatically:
+
+```typescript
+import { fetchMyGeo } from '@netloc8/core';
+
+const geo = await fetchMyGeo( { apiKey: 'pk_...' } );
+
+console.log( geo.location?.country?.code );  // "US"
+console.log( geo.location?.city );           // "Mountain View"
+console.log( geo.location?.timezone );       // "America/Los_Angeles"
+console.log( geo.network?.organization );    // "Google LLC"
+```
+
+### Get only the timezone (browser)
+
+```typescript
+import { fetchMyTimezone } from '@netloc8/core';
+
+const tz = await fetchMyTimezone( { apiKey: 'pk_...' } );
+
+console.log( tz ); // "America/Chicago"
+```
+
+### Look up a specific IP (server-side)
 
 ```typescript
 import { fetchGeo } from '@netloc8/core';
@@ -25,30 +60,133 @@ const geo = await fetchGeo( '203.0.113.42', {
     apiKey: 'sk_...',
 } );
 
-console.log( geo );
-// { ip, country, region, city, timezone, ... }
+console.log( geo.location?.country?.code );  // "US"
+console.log( geo.location?.city );           // "Mountain View"
 ```
 
-### Fetch only the timezone
+### Error handling
+
+All fetch functions return `null` on error — they never throw. Errors are
+logged to the console with structured codes when available:
 
 ```typescript
-import { fetchTimezone } from '@netloc8/core';
+import { fetchGeo } from '@netloc8/core';
 
-const tz = await fetchTimezone( '203.0.113.42', {
-    apiKey: 'sk_...',
+const geo = await fetchGeo( '203.0.113.42', { apiKey: process.env.NETLOC8_API_KEY } );
+
+if ( !geo ) {
+    // fetchGeo logged the error, e.g.:
+    // [netloc8] Geo lookup failed for 203.0.113.42: INVALID_IP — Invalid IP address format (HTTP 400)
+    console.log( 'Geo lookup failed' );
+}
+```
+
+## Response Shape
+
+The `Geo` type mirrors the API's `GeolocationResult` schema:
+
+```typescript
+interface Geo {
+    query?: {
+        type?: string;        // "ip"
+        value?: string;       // "8.8.8.8"
+        ipVersion?: number;   // 4 | 6
+    };
+    location?: {
+        continent?: { code?: string; name?: string };
+        country?: {
+            code?: string;    // ISO 3166-1 alpha-2
+            name?: string;
+            flag?: string;    // "🇺🇸"
+            unions?: string[]; // ["EU"] — replaces isEU boolean
+        };
+        region?: {
+            code?: string;    // ISO 3166-2
+            name?: string;
+        };
+        district?: string;
+        city?: string;
+        postalCode?: string;
+        coordinates?: {
+            latitude?: number;
+            longitude?: number;
+            accuracyRadius?: number;
+        };
+        timezone?: string;          // IANA timezone
+        utcOffset?: string;         // "-07:00"
+        geoConfidence?: number;     // 0.0–1.0
+        timezoneFromClient?: boolean; // SDK-only: browser-confirmed TZ
+    };
+    network?: {
+        asn?: string;           // "AS15169"
+        organization?: string;  // "Google LLC"
+        domain?: string;        // "google.com"
+    };
+    sources?: {
+        geo?: string[];  // ["dbip", "ipinfo"]
+        asn?: string[];
+        tz?: string[];
+    };
+    meta?: {
+        precision?: string;    // "city" | "region" | "country" | "continent" | "none"
+        tier?: string;
+        requestId?: string;
+        degraded?: boolean;
+    };
+}
+```
+
+### EU Detection
+
+The SDK provides an `isEU()` helper for GDPR / cookie consent checks:
+
+```typescript
+import { isEU } from '@netloc8/core';
+
+if ( isEU( geo ) ) {
+    showCookieConsent();
+}
+```
+
+Under the hood this checks `location.country.unions` for `"EU"` membership.
+
+## Browser Validation Headers
+
+Every API request automatically sends browser signals (when available):
+
+| Header | Value | Purpose |
+|--------|-------|---------|
+| `X-NL8-TZ` | IANA timezone | Cross-validate IP-derived timezone |
+| `X-NL8-Lang` | Browser language | Locale plausibility check |
+| `X-NL8-Conn` | Connection type (`4g`, `3g`) | Network classification |
+| `X-NL8-RTT` | Round-trip time (ms) | Latency measurement |
+
+These are sent automatically with zero configuration. They are not PII — they're
+equivalent to `Accept-Language` and similar headers browsers already send.
+
+## RUM Telemetry
+
+The SDK includes a RUM beacon module at `@netloc8/core/telemetry/rum`:
+
+```typescript
+import { initRum } from '@netloc8/core/telemetry/rum';
+
+// Start collecting — typically called once at app init
+const stop = initRum( {
+    endpoint: 'https://api.netloc8.com/v1/telemetry/rum',
+    sampleRate: 1.0,
 } );
-
-console.log( tz ); // "America/Chicago"
 ```
 
-### Client-side (browser) — fetch for the caller's own IP
+Collects:
+- **Core Web Vitals** — LCP, FID, INP, CLS, TTFB (via `web-vitals` library)
+- **Navigation Timing** — DNS, TLS, request, response durations
+- **JS errors** — unhandled exceptions and resource load failures
 
-```typescript
-import { fetchMyGeo, fetchMyTimezone } from '@netloc8/core';
+Beaconed via `navigator.sendBeacon()` on `visibilitychange` — zero latency impact.
 
-const geo = await fetchMyGeo( { apiKey: 'pk_...' } );
-const tz  = await fetchMyTimezone( { apiKey: 'pk_...' } );
-```
+> When using `@netloc8/react` or `@netloc8/nextjs`, RUM is initialized
+> automatically by the Provider. You don't need to call `initRum()` directly.
 
 ## Exports
 
@@ -62,9 +200,19 @@ const tz  = await fetchMyTimezone( { apiKey: 'pk_...' } );
 | `isPublicIp` | Check whether an IP is publicly routable |
 | `getGeoFromPlatformHeaders` | Parse Vercel / Cloudflare / CloudFront geo headers |
 | `parseCookie` / `serializeCookie` | Read/write the `__netloc8` cookie |
-| `reconcileGeo` | Merge cookie, platform, and API geo sources |
+| `reconcileGeo` | Deep-merge cookie, platform, and API geo sources |
 | `normalizeApiResponse` | Normalize raw API JSON into a `Geo` object |
+| `isEU` | Check whether a `Geo` location is in the European Union |
+| `getTimezone` / `getLanguage` / `getConnectionType` / `getDeviceType` | Browser signal helpers |
 | `Geo` (type) | The shared geolocation type used across all packages |
+| `ApiErrorResponse` (type) | Structured error response type |
+| `RumConfig` (type) | RUM configuration type |
+
+### Subpath Exports
+
+| Subpath | Export | Description |
+|---------|--------|-------------|
+| `@netloc8/core/telemetry/rum` | `initRum` | Initialize RUM beacon collection |
 
 ## License
 

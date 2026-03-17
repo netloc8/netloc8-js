@@ -20,7 +20,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 - **RUM telemetry** — new `@netloc8/core/telemetry/rum` subpath export, collects Core Web Vitals + Navigation Timing + JS errors via `navigator.sendBeacon()`. Enabled by default (`rum={true}`), opt out with `rum={false}`
 - **`web-vitals` dependency** — added as a regular dependency (4KB gzipped, lazy-loaded at runtime)
 - **`signals.ts` module** — shared browser signal collection (`getTimezone`, `getLanguage`, `getConnectionType`, `getDeviceType`) used by both API headers and RUM beacons
-- **Direct/proxy mode** — `NetLoc8Provider` supports `mode="direct"` (browser → API with publishable key) and `mode="proxy"` (server-resolved via Next.js)
+- **Auto-detect mode** — `NetLoc8Provider` infers direct/proxy mode from props (`apiKey` → direct, `geo` → proxy). Explicit `mode` prop available as override.
 - **Deep-merge `reconcileGeo`** — nested object merge with priority (api > platform > cookie) without clobbering sibling fields
 
 ### Changed
@@ -65,7 +65,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 - `@netloc8/react` v0.1.0 — React bindings with `NetLoc8Provider`, `useGeo()` hook, `GeoGate` component, and `GeoContext`
 - `@netloc8/nextjs` v0.1.0 — Next.js proxy (`createProxy`, `withGeoRedirect`), server functions (`getGeo`, `getTimezone`), and React re-exports
 - `fetchMyGeo()` and `fetchMyTimezone()` for client-side SPA usage with publishable keys (`pk_`)
-- `publishableKey` and `apiUrl` props on `NetLoc8Provider` for browser-side geo fetching
+- `apiKey` and `apiUrl` props on `NetLoc8Provider` for browser-side geo fetching
 - `X-NetLoc8-Client` request header on every API call, identifying SDK package and version
 - `clientId` option in `FetchGeoOptions` — allows higher-level packages to override the client identifier
 - Proxy strips incoming `x-netloc8-*` headers before processing to prevent header spoofing
