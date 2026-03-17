@@ -23,7 +23,7 @@ Build all packages and publish them to npm.
 2. **Bump versions** across all three packages. They share the same version number:
    ```bash
    # Update version in each package.json
-   # packages/netloc8-js/package.json
+   # packages/core/package.json
    # packages/react/package.json
    # packages/nextjs/package.json
    # Also update the root package.json
@@ -43,7 +43,7 @@ Build all packages and publish them to npm.
 
 5. **Verify the build output:**
    ```bash
-   ls packages/netloc8-js/dist/
+   ls packages/core/dist/
    ls packages/react/dist/
    ls packages/nextjs/dist/
    ```
@@ -51,7 +51,7 @@ Build all packages and publish them to npm.
 
 6. **Publish in dependency order** (core first):
    ```bash
-   cd packages/netloc8-js && bun publish --access public
+   cd packages/core && bun publish --access public
    cd packages/react && bun publish --access public
    cd packages/nextjs && bun publish --access public
    ```
@@ -71,7 +71,7 @@ Build all packages and publish them to npm.
 
 ## Guidelines
 
-- **Always publish in order:** `netloc8-js` → `react` → `nextjs`. The dependency chain requires this.
+- **Always publish in order:** `core` → `react` → `nextjs`. The dependency chain requires this.
 - **Version lock:** All three packages use the same version number.
 - **Dry run first:** Use `bun publish --dry-run` to verify package contents before the real publish.
 - **Clean before build:** tsdown configs have `clean: true`, but run `bun run clean` manually for safety.
