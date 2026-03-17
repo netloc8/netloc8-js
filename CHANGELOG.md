@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project adheres to [Semantic Versioning](https://semver.org/).
 
 
+## [1.0.1] — 2026-03-17
+
+### Changed
+- **Minified builds** — all packages now ship minified JS with source maps (core -17%, react -14%, nextjs -13%)
+- **CommonJS support** — `@netloc8/core` now ships CJS output alongside ESM for `require()` compatibility in Node.js servers
+- **Nested export conditions** — `@netloc8/core` uses per-format `types` entries so TypeScript `--moduleResolution nodenext` resolves `.d.cts` for CJS and `.d.mts` for ESM correctly
+- **`main` field** — added to `@netloc8/core` as fallback for tools that do not read the `exports` map
+
 ## [1.0.0] — 2026-03-17
 
 ### ⚠️ Breaking Changes

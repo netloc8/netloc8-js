@@ -1,6 +1,6 @@
 {
     "name": "@netloc8/core",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "description": "IP geolocation API client for JavaScript. Look up country, city, timezone, coordinates, ASN, and EU membership for any IP address.",
     "keywords": [
         "geolocation",
