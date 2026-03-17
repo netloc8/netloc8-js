@@ -9,6 +9,7 @@ export default defineConfig([
         format: 'esm',
         dts: true,
         clean: true,
+        minify: true,
         banner: { js: '"use client";' },
         define: {
             '__PKG_NAME__': JSON.stringify(pkg.name),
@@ -22,6 +23,7 @@ export default defineConfig([
         ],
         format: 'esm',
         dts: true,
+        minify: true,
         define: {
             '__PKG_NAME__': JSON.stringify(pkg.name),
             '__PKG_VERSION__': JSON.stringify(pkg.version),

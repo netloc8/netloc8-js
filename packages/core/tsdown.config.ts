@@ -8,6 +8,7 @@ export default defineConfig({
     format: 'esm',
     dts: true,
     clean: true,
+    minify: true,
     define: {
         '__PKG_NAME__': JSON.stringify(pkg.name),
         '__PKG_VERSION__': JSON.stringify(pkg.version),
