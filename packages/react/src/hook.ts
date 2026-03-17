@@ -2,7 +2,7 @@
 
 import { useContext } from 'react';
 import { GeoContext } from './context';
-import type { Geo } from '@netloc8/netloc8-js';
+import type { Geo } from '@netloc8/core';
 
 /**
  * Hook to access geolocation data in client components.

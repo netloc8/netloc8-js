@@ -6,8 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ## [Unreleased]
 
+## [0.2.0] — 2026-03-17
+
 ### Changed
-- **API Response Restructuring Plan** — updated `CF_GEO_PLAN.md` with final API response core nested specification, bitmask strategy, and unified error envelope details.
+- **Renamed `@netloc8/netloc8-js` → `@netloc8/core`** — the core package name no longer duplicates the scope; import from `@netloc8/core` going forward
+- Bumped all packages (`@netloc8/core`, `@netloc8/react`, `@netloc8/nextjs`) to v0.2.0
 
 ## [0.1.3] — 2026-03-07
 

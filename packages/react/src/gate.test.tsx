@@ -3,7 +3,7 @@ import { renderToString } from 'react-dom/server';
 import { createElement } from 'react';
 import { GeoGate } from './gate';
 import { GeoContext } from './context';
-import type { Geo } from '@netloc8/netloc8-js';
+import type { Geo } from '@netloc8/core';
 
 function renderGate(geo: Geo, props: Record<string, unknown>, children: string, fallback?: string) {
     return renderToString(
@@ -12,8 +12,11 @@ function renderGate(geo: Geo, props: Record<string, unknown>, children: string, 
             { value: geo },
             createElement(
                 GeoGate,
-                { ...props, fallback: fallback ? createElement('span', null, fallback) : undefined },
-                createElement('span', null, children)
+                {
+                    ...props,
+                    fallback: fallback ? createElement('span', null, fallback) : undefined,
+                    children: createElement('span', null, children),
+                },
             )
         )
     );

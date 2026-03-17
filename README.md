@@ -7,7 +7,7 @@ browser-accurate timezone reconciliation across multiple frameworks.
 
 | Package | Description |
 |---------|-------------|
-| [`@netloc8/netloc8-js`](./packages/netloc8-js/) | Zero-dependency core — API client, IP detection, platform headers, cookies |
+| [`@netloc8/core`](./packages/core/) | Zero-dependency core — API client, IP detection, platform headers, cookies |
 | [`@netloc8/react`](./packages/react/) | React context, Provider, `useGeo()` hook, `<GeoGate>` component |
 | [`@netloc8/nextjs`](./packages/nextjs/) | Next.js proxy, server functions, re-exports React bindings |
 
@@ -15,7 +15,7 @@ browser-accurate timezone reconciliation across multiple frameworks.
 
 - **Next.js** — install `@netloc8/nextjs` (includes React + core)
 - **React SPA** — install `@netloc8/react` (includes core)
-- **Node / Edge / Vanilla JS** — install `@netloc8/netloc8-js`
+- **Node / Edge / Vanilla JS** — install `@netloc8/core`
 
 See each package's README for detailed usage instructions.
 
@@ -39,7 +39,7 @@ bun install
 bun test packages/
 
 # Run tests for a specific package
-bun test packages/netloc8-js/src/
+bun test packages/core/src/
 ```
 
 ## How It Works

@@ -1,4 +1,4 @@
-import type { Geo } from '@netloc8/netloc8-js';
+import type { Geo } from '@netloc8/core';
 
 /**
  * Header-to-Geo field mapping.

@@ -1,6 +1,6 @@
 {
     "name": "@netloc8/nextjs",
-    "version": "0.1.3",
+    "version": "0.2.0",
     "type": "module",
     "license": "Elastic-2.0",
     "exports": {
@@ -35,7 +35,7 @@
         "react": ">=19.0.0"
     },
     "dependencies": {
-        "@netloc8/netloc8-js": "workspace:*",
+        "@netloc8/core": "workspace:*",
         "@netloc8/react": "workspace:*"
     }
 }
