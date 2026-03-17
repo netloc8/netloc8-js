@@ -1,6 +1,6 @@
 {
     "name": "@netloc8/react",
-    "version": "0.2.0",
+    "version": "1.0.0",
     "type": "module",
     "license": "Elastic-2.0",
     "exports": {
