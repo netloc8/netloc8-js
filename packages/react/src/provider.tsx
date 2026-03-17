@@ -9,16 +9,24 @@ import {
     serializeCookie,
     COOKIE_NAME,
 } from '@netloc8/core';
-import { GeoContext } from './context';
+import { GeoContext, type GeoContextValue } from './context';
 
 export interface NetLoc8ProviderProps {
     children: React.ReactNode;
-    /** Server-resolved geo data (from `getGeo()` in a Server Component). */
-    initialGeo?: Partial<Geo>;
-    /** Publishable API key (pk_) for browser-side geo lookups. */
-    publishableKey?: string;
-    /** @default 'proxy' */
+    /** Geo data resolved on the server (from `getGeo()` in a Server Component). */
+    geo?: Partial<Geo>;
+    /** API key for browser-side geo lookups (must be a publishable key `pk_`). */
+    apiKey?: string;
+    /**
+     * How geo data is fetched.
+     *
+     * Auto-detected when omitted:
+     * - `apiKey` → `'direct'`
+     * - `geo` (or neither) → `'proxy'`
+     */
     mode?: 'direct' | 'proxy';
+    /** Content to render while geo data is loading. */
+    loading?: React.ReactNode;
     /** Enable RUM beacon collection. @default true */
     rum?: boolean;
     /** RUM beacon endpoint override. */
@@ -28,42 +36,127 @@ export interface NetLoc8ProviderProps {
 }
 
 /**
+ * Determine whether we already have geo data available synchronously.
+ * This prevents unnecessary loading states when data exists in
+ * `geo` prop (proxy mode) or the cookie (repeat visits).
+ */
+function hasGeoData(geo: Geo): boolean {
+    return !!(geo.location?.country?.code || geo.location?.timezone || geo.query?.value);
+}
+
+/**
+ * Read cached geo data from the __netloc8 cookie, if available.
+ * Returns the parsed Geo object or undefined.
+ */
+function readCachedGeo(): Geo | undefined {
+    try {
+        if (typeof document === 'undefined') {
+            return undefined;
+        }
+
+        const cookieStr = document.cookie
+            .split('; ')
+            .find((c) => c.startsWith(`${COOKIE_NAME}=`))
+            ?.slice(COOKIE_NAME.length + 1);
+
+        if (cookieStr) {
+            const cached = parseCookie(cookieStr) as Geo;
+            if (hasGeoData(cached)) {
+                return cached;
+            }
+        }
+    } catch {
+        // SSR or cookie unavailable
+    }
+    return undefined;
+}
+
+/**
  * Provides geo data to all child components via React context.
  *
- * In **proxy** mode (default), uses server-resolved `initialGeo` from
- * the Next.js proxy. Only reconciles the browser timezone.
+ * Mode is auto-detected from props:
+ * - Pass `apiKey` → **direct** mode (calls the edge API from the browser)
+ * - Pass `geo` → **proxy** mode (uses server-resolved data)
  *
- * In **direct** mode, calls the NetLoc8 API directly from the browser
- * using a publishable key (pk_). Faster for static-site or non-Next.js
- * deployments.
+ * You can override with the explicit `mode` prop if needed.
  */
 export function NetLoc8Provider({
     children,
-    initialGeo,
-    publishableKey,
-    mode = 'proxy',
+    geo: initialGeo,
+    apiKey,
+    mode: explicitMode,
+    loading: loadingContent,
     rum = true,
     rumEndpoint,
     rumSampleRate,
 }: NetLoc8ProviderProps): React.JSX.Element {
-    const [geo, setGeo] = useState<Geo>(() => initialGeo ?? {});
+    // Auto-detect mode: apiKey → direct, otherwise → proxy
+    const mode = explicitMode ?? (apiKey ? 'direct' : 'proxy');
 
-    // Direct-mode: fetch geo from the API on mount
+    // Guard: warn if a secret key is passed to the client-side Provider
+    if (apiKey?.startsWith('sk_')) {
+        console.error('[netloc8] Secret keys (sk_) must not be used in client components. Use a publishable key (pk_) instead.');
+    }
+
+    // Seed geo state from the prop (proxy) or cookie cache (direct repeat visits)
+    const [geo, setGeo] = useState<Geo>(() => {
+        if (initialGeo && hasGeoData(initialGeo as Geo)) {
+            return initialGeo as Geo;
+        }
+        if (mode === 'direct') {
+            return readCachedGeo() ?? {};
+        }
+        return initialGeo ?? {};
+    });
+
+    const [isLoading, setIsLoading] = useState<boolean>(() => {
+        // Proxy mode with geo prop — data is already available
+        if (mode === 'proxy' && initialGeo && hasGeoData(initialGeo as Geo)) {
+            return false;
+        }
+        // Direct mode — true only if we have no cached data
+        if (mode === 'direct' && apiKey) {
+            return !hasGeoData(geo);
+        }
+        return false;
+    });
+    const [error, setError] = useState<Error | null>(null);
+
+    // Direct-mode: fetch geo from the API on mount (skip if cookie provided data)
     useEffect(() => {
-        if (mode !== 'direct' || !publishableKey) {
+        if (mode !== 'direct' || !apiKey) {
+            return;
+        }
+
+        // Cookie already provided data — no need to fetch
+        if (hasGeoData(geo)) {
             return;
         }
 
         let cancelled = false;
-        fetchMyGeo({ apiKey: publishableKey }).then((raw) => {
-            if (cancelled || !raw) {
+        setIsLoading(true);
+        setError(null);
+
+        fetchMyGeo({ apiKey }).then((raw) => {
+            if (cancelled) {
+                return;
+            }
+            if (!raw) {
+                setError(new Error('Geo lookup returned no data'));
+                setIsLoading(false);
                 return;
             }
             const fetched = normalizeApiResponse(raw);
             setGeo((prev) => ({ ...prev, ...fetched }));
+            setIsLoading(false);
+        }).catch((err) => {
+            if (!cancelled) {
+                setError(err instanceof Error ? err : new Error(String(err)));
+                setIsLoading(false);
+            }
         });
         return () => { cancelled = true; };
-    }, [mode, publishableKey]);
+    }, [mode, apiKey]); // eslint-disable-line react-hooks/exhaustive-deps — geo is seed data, not a dependency
 
     // Timezone reconciliation — always runs regardless of mode
     useEffect(() => {
@@ -151,7 +244,19 @@ export function NetLoc8Provider({
         return () => { teardown?.(); };
     }, [rum, rumEndpoint, rumSampleRate]);
 
-    const value = useMemo(() => geo, [geo]);
+    const value: GeoContextValue = useMemo(
+        () => ({ geo, isLoading, error }),
+        [geo, isLoading, error],
+    );
+
+    // Show loading content while geo data is being fetched
+    if (isLoading && loadingContent !== undefined) {
+        return (
+            <GeoContext.Provider value={value}>
+                {loadingContent}
+            </GeoContext.Provider>
+        );
+    }
 
     return (
         <GeoContext.Provider value={value}>
