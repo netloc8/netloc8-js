@@ -3,7 +3,7 @@
 import type { ReactNode } from 'react';
 import { useGeo } from './hook';
 
-interface GeoGateProps {
+export interface GeoGateProps {
     country?: string | string[];
     region?: string | string[];
     city?: string | string[];

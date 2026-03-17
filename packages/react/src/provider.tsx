@@ -5,8 +5,8 @@ declare const __PKG_VERSION__: string;
 
 import { useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
-import type { Geo } from '@netloc8/netloc8-js';
-import { COOKIE_NAME, COOKIE_OPTIONS, serializeCookie, fetchMyGeo, normalizeApiResponse } from '@netloc8/netloc8-js';
+import type { Geo } from '@netloc8/core';
+import { COOKIE_NAME, COOKIE_OPTIONS, serializeCookie, fetchMyGeo, normalizeApiResponse } from '@netloc8/core';
 import { GeoContext } from './context';
 
 interface NetLoc8ProviderProps {

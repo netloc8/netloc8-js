@@ -1,7 +1,7 @@
 declare const __PKG_NAME__: string;
 declare const __PKG_VERSION__: string;
 
-import type { Geo } from '@netloc8/netloc8-js';
+import type { Geo } from '@netloc8/core';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import {
@@ -15,7 +15,7 @@ import {
     reconcileGeo,
     COOKIE_NAME,
     COOKIE_OPTIONS,
-} from '@netloc8/netloc8-js';
+} from '@netloc8/core';
 
 interface CreateProxyOptions {
     timeout?: number;
