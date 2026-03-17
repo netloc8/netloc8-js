@@ -11,7 +11,8 @@ Build all packages and publish them to npm.
 - All tests must pass: `bun test packages/`
 - CHANGELOG.md must be updated with the new version
 - You must be on the `main` branch (or a release branch)
-- `NPM_TOKEN` must be set (or `npm login` completed)
+- **Always use `bun publish`**, never `npm publish` — npm does not resolve `workspace:*` dependencies correctly in this monorepo
+- Authentication: `bun publish` automatically uses the auth token from `~/.npmrc` (no `bun login` needed)
 
 ## Steps
 
