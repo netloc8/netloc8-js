@@ -92,6 +92,61 @@ function logApiError(context: string, apiError: ApiErrorResponse | null, status:
 }
 
 /**
+ * Shared fetch implementation used by all public API functions.
+ * Handles header setup, timeout, error parsing, and RTT measurement.
+ *
+ * Returns the parsed JSON body, or null on error/timeout.
+ * Never throws.
+ */
+async function fetchApi<T>(
+    url: string,
+    context: string,
+    options?: FetchGeoOptions,
+): Promise<T | null> {
+    const apiKey = options?.apiKey ?? process.env.NETLOC8_API_KEY;
+    const timeout = options?.timeout ?? 1500;
+    const clientId = options?.clientId ?? CLIENT_ID;
+
+    if (!apiKey) {
+        console.warn('[netloc8] No API key provided. Set NETLOC8_API_KEY or pass apiKey in options.');
+        return null;
+    }
+
+    try {
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'X-API-Key': apiKey,
+                'X-NetLoc8-Client': clientId,
+                'Accept': 'application/json',
+                ...getBrowserHeaders(),
+            },
+            signal: AbortSignal.timeout(timeout),
+        });
+
+        measureRtt();
+
+        if (!response.ok) {
+            const apiError = await parseApiError(response);
+            logApiError(context, apiError, response.status);
+            return null;
+        }
+
+        return await response.json() as T;
+    } catch (error) {
+        console.warn(`[netloc8] ${context}: ${(error as Error).message}`);
+        return null;
+    }
+}
+
+/**
+ * Resolve the API base URL from options or environment.
+ */
+function resolveApiUrl(options?: FetchGeoOptions): string {
+    return options?.apiUrl ?? process.env.NETLOC8_API_URL ?? DEFAULT_API_URL;
+}
+
+/**
  * Fetch geolocation data for an IP address from the NetLoc8 API.
  *
  * Returns the raw API JSON on success.
@@ -103,43 +158,8 @@ export async function fetchGeo(
     ipAddress: string,
     options?: FetchGeoOptions
 ): Promise<Record<string, unknown> | null> {
-    const apiKey = options?.apiKey ?? process.env.NETLOC8_API_KEY;
-    const apiUrl = options?.apiUrl ?? process.env.NETLOC8_API_URL ?? DEFAULT_API_URL;
-    const timeout = options?.timeout ?? 1500;
-    const clientId = options?.clientId ?? CLIENT_ID;
-
-    if (!apiKey) {
-        console.warn('[netloc8] No API key provided. Set NETLOC8_API_KEY or pass apiKey in options.');
-        return null;
-    }
-
-    const url = `${apiUrl}/v1/ip/${encodeURIComponent(ipAddress)}`;
-
-    try {
-        const response = await fetch(url, {
-            method: 'GET',
-            headers: {
-                'X-API-Key': apiKey,
-                'X-NetLoc8-Client': clientId,
-                'Accept': 'application/json',
-                ...getBrowserHeaders(),
-            },
-            signal: AbortSignal.timeout(timeout),
-        });
-
-        measureRtt();
-
-        if (!response.ok) {
-            const apiError = await parseApiError(response);
-            logApiError(`Geo lookup failed for ${ipAddress}`, apiError, response.status);
-            return null;
-        }
-
-        return await response.json() as Record<string, unknown>;
-    } catch (error) {
-        console.warn(`[netloc8] Geo lookup failed for ${ipAddress}: ${(error as Error).message}`);
-        return null;
-    }
+    const url = `${resolveApiUrl(options)}/v1/ip/${encodeURIComponent(ipAddress)}`;
+    return fetchApi<Record<string, unknown>>(url, `Geo lookup failed for ${ipAddress}`, options);
 }
 
 /**
@@ -151,43 +171,8 @@ export async function fetchTimezone(
     ipAddress: string,
     options?: FetchGeoOptions
 ): Promise<string | null> {
-    const apiKey = options?.apiKey ?? process.env.NETLOC8_API_KEY;
-    const apiUrl = options?.apiUrl ?? process.env.NETLOC8_API_URL ?? DEFAULT_API_URL;
-    const timeout = options?.timeout ?? 1500;
-    const clientId = options?.clientId ?? CLIENT_ID;
-
-    if (!apiKey) {
-        console.warn('[netloc8] No API key provided. Set NETLOC8_API_KEY or pass apiKey in options.');
-        return null;
-    }
-
-    const url = `${apiUrl}/v1/ip/${encodeURIComponent(ipAddress)}/timezone`;
-
-    try {
-        const response = await fetch(url, {
-            method: 'GET',
-            headers: {
-                'X-API-Key': apiKey,
-                'X-NetLoc8-Client': clientId,
-                'Accept': 'application/json',
-                ...getBrowserHeaders(),
-            },
-            signal: AbortSignal.timeout(timeout),
-        });
-
-        measureRtt();
-
-        if (!response.ok) {
-            const apiError = await parseApiError(response);
-            logApiError(`Timezone lookup failed for ${ipAddress}`, apiError, response.status);
-            return null;
-        }
-
-        return await response.json() as string;
-    } catch (error) {
-        console.warn(`[netloc8] Timezone lookup failed for ${ipAddress}: ${(error as Error).message}`);
-        return null;
-    }
+    const url = `${resolveApiUrl(options)}/v1/ip/${encodeURIComponent(ipAddress)}/timezone`;
+    return fetchApi<string>(url, `Timezone lookup failed for ${ipAddress}`, options);
 }
 
 /**
@@ -203,43 +188,8 @@ export async function fetchTimezone(
 export async function fetchMyGeo(
     options?: FetchGeoOptions
 ): Promise<Record<string, unknown> | null> {
-    const apiKey = options?.apiKey ?? process.env.NETLOC8_API_KEY;
-    const apiUrl = options?.apiUrl ?? process.env.NETLOC8_API_URL ?? DEFAULT_API_URL;
-    const timeout = options?.timeout ?? 1500;
-    const clientId = options?.clientId ?? CLIENT_ID;
-
-    if (!apiKey) {
-        console.warn('[netloc8] No API key provided. Set NETLOC8_API_KEY or pass apiKey in options.');
-        return null;
-    }
-
-    const url = `${apiUrl}/v1/ip/me`;
-
-    try {
-        const response = await fetch(url, {
-            method: 'GET',
-            headers: {
-                'X-API-Key': apiKey,
-                'X-NetLoc8-Client': clientId,
-                'Accept': 'application/json',
-                ...getBrowserHeaders(),
-            },
-            signal: AbortSignal.timeout(timeout),
-        });
-
-        measureRtt();
-
-        if (!response.ok) {
-            const apiError = await parseApiError(response);
-            logApiError('Self geo lookup failed', apiError, response.status);
-            return null;
-        }
-
-        return await response.json() as Record<string, unknown>;
-    } catch (error) {
-        console.warn(`[netloc8] Self geo lookup failed: ${(error as Error).message}`);
-        return null;
-    }
+    const url = `${resolveApiUrl(options)}/v1/ip/me`;
+    return fetchApi<Record<string, unknown>>(url, 'Self geo lookup failed', options);
 }
 
 /**
@@ -253,41 +203,6 @@ export async function fetchMyGeo(
 export async function fetchMyTimezone(
     options?: FetchGeoOptions
 ): Promise<string | null> {
-    const apiKey = options?.apiKey ?? process.env.NETLOC8_API_KEY;
-    const apiUrl = options?.apiUrl ?? process.env.NETLOC8_API_URL ?? DEFAULT_API_URL;
-    const timeout = options?.timeout ?? 1500;
-    const clientId = options?.clientId ?? CLIENT_ID;
-
-    if (!apiKey) {
-        console.warn('[netloc8] No API key provided. Set NETLOC8_API_KEY or pass apiKey in options.');
-        return null;
-    }
-
-    const url = `${apiUrl}/v1/ip/me/timezone`;
-
-    try {
-        const response = await fetch(url, {
-            method: 'GET',
-            headers: {
-                'X-API-Key': apiKey,
-                'X-NetLoc8-Client': clientId,
-                'Accept': 'application/json',
-                ...getBrowserHeaders(),
-            },
-            signal: AbortSignal.timeout(timeout),
-        });
-
-        measureRtt();
-
-        if (!response.ok) {
-            const apiError = await parseApiError(response);
-            logApiError('Self timezone lookup failed', apiError, response.status);
-            return null;
-        }
-
-        return await response.json() as string;
-    } catch (error) {
-        console.warn(`[netloc8] Self timezone lookup failed: ${(error as Error).message}`);
-        return null;
-    }
+    const url = `${resolveApiUrl(options)}/v1/ip/me/timezone`;
+    return fetchApi<string>(url, 'Self timezone lookup failed', options);
 }
