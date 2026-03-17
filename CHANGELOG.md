@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.1.0] — 2026-03-17
+
+### Added
+- **Anonymous API requests** — new `allowAnonymous` option in `FetchGeoOptions` enables API calls without an API key
+- **Country name enrichment** — `getGeoFromPlatformHeaders` now resolves country codes to names via `Intl.DisplayNames` (e.g. `US` → `United States`)
+- **Dev-mode warnings** — context-aware console warnings when no API key is configured, distinguishing between environments with and without platform geo headers
+
+### Changed
+- **Proxy API call logic** — always attempts geo lookup when client IP changes; uses full timeout with API key, short timeout without
+- **Code clarity** — extracted shared `ipChanged` flag and `clientId` variable in proxy to reduce duplication
 
 ## [1.0.1] — 2026-03-17
 

@@ -88,6 +88,8 @@ export interface FetchGeoOptions {
     apiUrl?: string;
     timeout?: number;
     clientId?: string;
+    /** When true, skip the API key requirement and omit X-API-Key from headers. */
+    allowAnonymous?: boolean;
 }
 
 // --- Cookie options ---

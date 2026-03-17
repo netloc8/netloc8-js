@@ -106,21 +106,26 @@ async function fetchApi<T>(
     const apiKey = options?.apiKey ?? process.env.NETLOC8_API_KEY;
     const timeout = options?.timeout ?? 1500;
     const clientId = options?.clientId ?? CLIENT_ID;
+    const allowAnonymous = options?.allowAnonymous === true;
 
-    if (!apiKey) {
+    if (!apiKey && !allowAnonymous) {
         console.warn('[netloc8] No API key provided. Set NETLOC8_API_KEY or pass apiKey in options.');
         return null;
     }
 
     try {
+        const headers: Record<string, string> = {
+            'X-NetLoc8-Client': clientId,
+            'Accept': 'application/json',
+            ...getBrowserHeaders(),
+        };
+        if (apiKey) {
+            headers['X-API-Key'] = apiKey;
+        }
+
         const response = await fetch(url, {
             method: 'GET',
-            headers: {
-                'X-API-Key': apiKey,
-                'X-NetLoc8-Client': clientId,
-                'Accept': 'application/json',
-                ...getBrowserHeaders(),
-            },
+            headers,
             signal: AbortSignal.timeout(timeout),
         });
 
