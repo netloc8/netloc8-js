@@ -8,6 +8,32 @@ export interface ReconcileSources {
 }
 
 /**
+ * Deep-merge a source value into the target, skipping undefined values.
+ * Only merges plain objects one level at a time — arrays and primitives
+ * are replaced rather than merged.
+ */
+function deepMerge(target: Record<string, unknown>, source: Record<string, unknown>): void {
+    for (const [key, value] of Object.entries(source)) {
+        if (value === undefined) {
+            continue;
+        }
+
+        if (
+            typeof value === 'object' &&
+            value !== null &&
+            !Array.isArray(value) &&
+            typeof target[key] === 'object' &&
+            target[key] !== null &&
+            !Array.isArray(target[key])
+        ) {
+            deepMerge(target[key] as Record<string, unknown>, value as Record<string, unknown>);
+        } else {
+            target[key] = value;
+        }
+    }
+}
+
+/**
  * Merge geo data from multiple sources into a single authoritative Geo object.
  *
  * Source priority (highest to lowest):
@@ -23,50 +49,43 @@ export function reconcileGeo(sources: ReconcileSources): Geo {
     const { cookie, platform, api, ip } = sources;
 
     // Build merged geo from lowest to highest priority
-    const geo: Geo = { ip };
+    const geo: Geo = {};
+    if (ip) {
+        geo.query = { value: ip };
+    }
 
     // Layer in cookie fields (lowest priority — stale but useful fallback)
     if (cookie) {
-        Object.assign(geo, stripUndefined(cookie));
+        deepMerge(geo as Record<string, unknown>, cookie as Record<string, unknown>);
     }
 
     // Layer in platform headers (partial — may only have country)
     if (platform) {
-        Object.assign(geo, stripUndefined(platform));
+        deepMerge(geo as Record<string, unknown>, platform as Record<string, unknown>);
     }
 
     // Layer in API response (most complete — overwrites platform fields)
     if (api) {
-        Object.assign(geo, stripUndefined(api));
+        deepMerge(geo as Record<string, unknown>, api as Record<string, unknown>);
     }
 
     // If cookie had timezoneFromClient but IP changed,
     // keep the browser timezone but mark it as stale
     if (
-        cookie?.timezoneFromClient === true &&
-        cookie?.ip !== ip &&
-        cookie?.timezone
+        cookie?.location?.timezoneFromClient === true &&
+        cookie?.query?.value !== ip &&
+        cookie?.location?.timezone
     ) {
-        geo.timezone = cookie.timezone;
-        geo.timezoneFromClient = false;
+        if (!geo.location) geo.location = {};
+        geo.location.timezone = cookie.location.timezone;
+        geo.location.timezoneFromClient = false;
     }
 
     // Ensure IP is set
-    geo.ip = ip;
+    if (ip) {
+        if (!geo.query) geo.query = {};
+        geo.query.value = ip;
+    }
 
     return geo;
-}
-
-/**
- * Remove undefined values from an object so Object.assign doesn't overwrite
- * existing values with undefined.
- */
-function stripUndefined(obj: Partial<Geo>): Partial<Geo> {
-    const result: Partial<Geo> = {};
-    for (const [key, value] of Object.entries(obj)) {
-        if (value !== undefined) {
-            (result as Record<string, unknown>)[key] = value;
-        }
-    }
-    return result;
 }

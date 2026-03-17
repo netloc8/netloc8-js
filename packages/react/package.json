@@ -1,6 +1,31 @@
 {
     "name": "@netloc8/react",
-    "version": "0.2.0",
+    "version": "1.0.0",
+    "description": "React geolocation components. Provider, useGeo() hook, and GeoGate for conditional rendering by country, region, city, and EU membership.",
+    "keywords": [
+        "react",
+        "react-hook",
+        "geolocation",
+        "ip-geolocation",
+        "geoip",
+        "useGeo",
+        "GeoGate",
+        "eu-detection",
+        "gdpr",
+        "cookie-consent",
+        "country-detection",
+        "location-detection",
+        "geo-blocking",
+        "timezone",
+        "react-context",
+        "netloc8"
+    ],
+    "homepage": "https://netloc8.com",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/netloc8/netloc8-js",
+        "directory": "packages/react"
+    },
     "type": "module",
     "license": "Elastic-2.0",
     "exports": {
@@ -23,5 +48,8 @@
     },
     "dependencies": {
         "@netloc8/core": "workspace:*"
+    },
+    "engines": {
+        "node": ">=18"
     }
 }

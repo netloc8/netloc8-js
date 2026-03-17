@@ -34,41 +34,262 @@ interface GeoRedirectOptions {
     excludePaths?: string[];
 }
 
-/**
- * Header-to-Geo field mapping for setting request headers.
- */
-const GEO_HEADER_MAP: Array<[keyof Geo, string]> = [
-    ['ip', 'x-netloc8-ip'],
-    ['ipVersion', 'x-netloc8-ip-version'],
-    ['continent', 'x-netloc8-continent'],
-    ['continentName', 'x-netloc8-continent-name'],
-    ['country', 'x-netloc8-country'],
-    ['countryName', 'x-netloc8-country-name'],
-    ['isEU', 'x-netloc8-is-eu'],
-    ['region', 'x-netloc8-region'],
-    ['regionName', 'x-netloc8-region-name'],
-    ['city', 'x-netloc8-city'],
-    ['postalCode', 'x-netloc8-postal-code'],
-    ['latitude', 'x-netloc8-latitude'],
-    ['longitude', 'x-netloc8-longitude'],
-    ['timezone', 'x-netloc8-timezone'],
-    ['accuracyRadius', 'x-netloc8-accuracy-radius'],
-    ['precision', 'x-netloc8-precision'],
-    ['isLimited', 'x-netloc8-is-limited'],
-    ['limitReason', 'x-netloc8-limit-reason'],
-    ['timezoneFromClient', 'x-netloc8-timezone-from-client'],
+// --- Header transport ---
+// These map nested Geo paths to/from x-netloc8-* request headers
+// for the proxy → Server Component transport layer.
+
+interface HeaderEntry {
+    header: string;
+    get: (geo: Geo) => string | number | boolean | string[] | undefined;
+    set: (geo: Geo, raw: string) => void;
+    type: 'string' | 'number' | 'boolean' | 'json';
+}
+
+const HEADER_ENTRIES: HeaderEntry[] = [
+    {
+        header: 'x-netloc8-ip',
+        get: (g) => g.query?.value,
+        set: (g, v) => { if (!g.query) g.query = {}; g.query.value = v; },
+        type: 'string',
+    },
+    {
+        header: 'x-netloc8-ip-version',
+        get: (g) => g.query?.ipVersion,
+        set: (g, v) => { const n = parseFloat(v); if (!Number.isFinite(n)) return; if (!g.query) g.query = {}; g.query.ipVersion = n; },
+        type: 'number',
+    },
+    {
+        header: 'x-netloc8-continent-code',
+        get: (g) => g.location?.continent?.code,
+        set: (g, v) => {
+            if (!g.location) g.location = {};
+            if (!g.location.continent) g.location.continent = {};
+            g.location.continent.code = v;
+        },
+        type: 'string',
+    },
+    {
+        header: 'x-netloc8-continent-name',
+        get: (g) => g.location?.continent?.name,
+        set: (g, v) => {
+            if (!g.location) g.location = {};
+            if (!g.location.continent) g.location.continent = {};
+            g.location.continent.name = v;
+        },
+        type: 'string',
+    },
+    {
+        header: 'x-netloc8-country-code',
+        get: (g) => g.location?.country?.code,
+        set: (g, v) => {
+            if (!g.location) g.location = {};
+            if (!g.location.country) g.location.country = {};
+            g.location.country.code = v;
+        },
+        type: 'string',
+    },
+    {
+        header: 'x-netloc8-country-name',
+        get: (g) => g.location?.country?.name,
+        set: (g, v) => {
+            if (!g.location) g.location = {};
+            if (!g.location.country) g.location.country = {};
+            g.location.country.name = v;
+        },
+        type: 'string',
+    },
+    {
+        header: 'x-netloc8-country-flag',
+        get: (g) => g.location?.country?.flag,
+        set: (g, v) => {
+            if (!g.location) g.location = {};
+            if (!g.location.country) g.location.country = {};
+            g.location.country.flag = v;
+        },
+        type: 'string',
+    },
+    {
+        header: 'x-netloc8-country-unions',
+        get: (g) => g.location?.country?.unions,
+        set: (g, v) => {
+            if (!g.location) g.location = {};
+            if (!g.location.country) g.location.country = {};
+            try {
+                const parsed = JSON.parse(v);
+                if (Array.isArray(parsed)) {
+                    g.location.country.unions = parsed;
+                }
+            } catch {
+                // Skip malformed JSON
+            }
+        },
+        type: 'json',
+    },
+    {
+        header: 'x-netloc8-region-code',
+        get: (g) => g.location?.region?.code,
+        set: (g, v) => {
+            if (!g.location) g.location = {};
+            if (!g.location.region) g.location.region = {};
+            g.location.region.code = v;
+        },
+        type: 'string',
+    },
+    {
+        header: 'x-netloc8-region-name',
+        get: (g) => g.location?.region?.name,
+        set: (g, v) => {
+            if (!g.location) g.location = {};
+            if (!g.location.region) g.location.region = {};
+            g.location.region.name = v;
+        },
+        type: 'string',
+    },
+    {
+        header: 'x-netloc8-district',
+        get: (g) => g.location?.district,
+        set: (g, v) => { if (!g.location) g.location = {}; g.location.district = v; },
+        type: 'string',
+    },
+    {
+        header: 'x-netloc8-city',
+        get: (g) => g.location?.city,
+        set: (g, v) => { if (!g.location) g.location = {}; g.location.city = v; },
+        type: 'string',
+    },
+    {
+        header: 'x-netloc8-postal-code',
+        get: (g) => g.location?.postalCode,
+        set: (g, v) => { if (!g.location) g.location = {}; g.location.postalCode = v; },
+        type: 'string',
+    },
+    {
+        header: 'x-netloc8-latitude',
+        get: (g) => g.location?.coordinates?.latitude,
+        set: (g, v) => {
+            if (!g.location) g.location = {};
+            if (!g.location.coordinates) g.location.coordinates = {};
+            const n = parseFloat(v); if (!Number.isFinite(n)) return;
+            g.location.coordinates.latitude = n;
+        },
+        type: 'number',
+    },
+    {
+        header: 'x-netloc8-longitude',
+        get: (g) => g.location?.coordinates?.longitude,
+        set: (g, v) => {
+            if (!g.location) g.location = {};
+            if (!g.location.coordinates) g.location.coordinates = {};
+            const n = parseFloat(v); if (!Number.isFinite(n)) return;
+            g.location.coordinates.longitude = n;
+        },
+        type: 'number',
+    },
+    {
+        header: 'x-netloc8-accuracy-radius',
+        get: (g) => g.location?.coordinates?.accuracyRadius,
+        set: (g, v) => {
+            if (!g.location) g.location = {};
+            if (!g.location.coordinates) g.location.coordinates = {};
+            const n = parseFloat(v); if (!Number.isFinite(n)) return;
+            g.location.coordinates.accuracyRadius = n;
+        },
+        type: 'number',
+    },
+    {
+        header: 'x-netloc8-timezone',
+        get: (g) => g.location?.timezone,
+        set: (g, v) => { if (!g.location) g.location = {}; g.location.timezone = v; },
+        type: 'string',
+    },
+    {
+        header: 'x-netloc8-utc-offset',
+        get: (g) => g.location?.utcOffset,
+        set: (g, v) => { if (!g.location) g.location = {}; g.location.utcOffset = v; },
+        type: 'string',
+    },
+    {
+        header: 'x-netloc8-geo-confidence',
+        get: (g) => g.location?.geoConfidence,
+        set: (g, v) => { const n = parseFloat(v); if (!Number.isFinite(n)) return; if (!g.location) g.location = {}; g.location.geoConfidence = n; },
+        type: 'number',
+    },
+    {
+        header: 'x-netloc8-asn',
+        get: (g) => g.network?.asn,
+        set: (g, v) => { if (!g.network) g.network = {}; g.network.asn = v; },
+        type: 'string',
+    },
+    {
+        header: 'x-netloc8-asn-org',
+        get: (g) => g.network?.organization,
+        set: (g, v) => { if (!g.network) g.network = {}; g.network.organization = v; },
+        type: 'string',
+    },
+    {
+        header: 'x-netloc8-asn-domain',
+        get: (g) => g.network?.domain,
+        set: (g, v) => { if (!g.network) g.network = {}; g.network.domain = v; },
+        type: 'string',
+    },
+    {
+        header: 'x-netloc8-precision',
+        get: (g) => g.meta?.precision,
+        set: (g, v) => { if (!g.meta) g.meta = {}; g.meta.precision = v; },
+        type: 'string',
+    },
+    {
+        header: 'x-netloc8-degraded',
+        get: (g) => g.meta?.degraded,
+        set: (g, v) => { if (!g.meta) g.meta = {}; g.meta.degraded = v === 'true'; },
+        type: 'boolean',
+    },
+    {
+        header: 'x-netloc8-timezone-from-client',
+        get: (g) => g.location?.timezoneFromClient,
+        set: (g, v) => { if (!g.location) g.location = {}; g.location.timezoneFromClient = v === 'true'; },
+        type: 'boolean',
+    },
 ];
 
 /**
  * Set x-netloc8-* request headers from a Geo object.
  */
 function setGeoHeaders(requestHeaders: Headers, geo: Geo): void {
-    for (const [field, header] of GEO_HEADER_MAP) {
-        const value = geo[field];
+    for (const entry of HEADER_ENTRIES) {
+        const value = entry.get(geo);
         if (value !== undefined && value !== null) {
-            requestHeaders.set(header, encodeURIComponent(String(value)));
+            if (entry.type === 'json') {
+                requestHeaders.set(entry.header, encodeURIComponent(JSON.stringify(value)));
+            } else {
+                requestHeaders.set(entry.header, encodeURIComponent(String(value)));
+            }
         }
     }
+}
+
+/**
+ * Read x-netloc8-* request headers back into a Geo object.
+ * Used by server.ts to reconstruct Geo on the server side.
+ */
+export function readGeoHeaders(headers: Headers): Geo {
+    const geo: Geo = {};
+
+    for (const entry of HEADER_ENTRIES) {
+        const raw = headers.get(entry.header);
+        if (raw === null) {
+            continue;
+        }
+
+        try {
+            const decoded = decodeURIComponent(raw);
+            entry.set(geo, decoded);
+        } catch {
+            // Skip this header if decodeURIComponent throws
+        }
+    }
+
+    return geo;
 }
 
 /**
@@ -88,8 +309,8 @@ export function createProxy(options?: CreateProxyOptions):
 
         // Security: Remove any incoming spoofed headers
         const requestHeaders = new Headers(request.headers);
-        for (const [, headerName] of GEO_HEADER_MAP) {
-            requestHeaders.delete(headerName);
+        for (const entry of HEADER_ENTRIES) {
+            requestHeaders.delete(entry.header);
         }
 
         // 1. Determine client IP
@@ -111,9 +332,12 @@ export function createProxy(options?: CreateProxyOptions):
         // client-controlled cookie. Re-resolve other geo fields to prevent
         // spoofing of country/region/city via cookie manipulation.
         const cookieTimezone = (
-            cookieGeo.timezoneFromClient === true &&
-            cookieGeo.ip === clientIp
-        ) ? { timezone: cookieGeo.timezone, timezoneFromClient: cookieGeo.timezoneFromClient } : undefined;
+            cookieGeo.location?.timezoneFromClient === true &&
+            cookieGeo.query?.value === clientIp
+        ) ? {
+            timezone: cookieGeo.location.timezone,
+            timezoneFromClient: cookieGeo.location.timezoneFromClient,
+        } : undefined;
 
         // 3. Extract platform headers (zero-cost)
         const platformGeo = getGeoFromPlatformHeaders(request.headers);
@@ -121,7 +345,7 @@ export function createProxy(options?: CreateProxyOptions):
         // 4. Decide whether to call the API
         let apiGeo: Geo | undefined;
 
-        if (clientIp && isPublicIp(clientIp) && !platformGeo.timezone && !cookieTimezone) {
+        if (clientIp && isPublicIp(clientIp) && !platformGeo.location?.country?.code && !cookieTimezone) {
             const raw = await fetchGeo(clientIp, { apiKey, apiUrl, timeout, clientId: typeof __PKG_NAME__ !== 'undefined' ? `${__PKG_NAME__}/${__PKG_VERSION__}` : undefined });
             if (raw) {
                 apiGeo = normalizeApiResponse(raw, clientIp);
@@ -133,7 +357,7 @@ export function createProxy(options?: CreateProxyOptions):
         //    Pass the full cookie so self-hosted deployments (no platform
         //    headers, API call skipped) still have city/country/region.
         const geo = reconcileGeo({
-            cookie: cookieGeo.ip ? cookieGeo : undefined,
+            cookie: cookieGeo.query?.value ? cookieGeo : undefined,
             platform: platformGeo,
             api: apiGeo,
             ip: clientIp,
@@ -141,8 +365,9 @@ export function createProxy(options?: CreateProxyOptions):
 
         // Apply trusted cookie timezone if available
         if (cookieTimezone) {
-            geo.timezone = cookieTimezone.timezone;
-            geo.timezoneFromClient = cookieTimezone.timezoneFromClient;
+            if (!geo.location) geo.location = {};
+            geo.location.timezone = cookieTimezone.timezone;
+            geo.location.timezoneFromClient = cookieTimezone.timezoneFromClient;
         }
 
         // 6. Set request headers
@@ -169,7 +394,7 @@ export function createProxy(options?: CreateProxyOptions):
         });
 
         // 8. Set/update the cookie if needed
-        if (!cookieValue || cookieGeo.ip !== clientIp) {
+        if (!cookieValue || cookieGeo.query?.value !== clientIp) {
             response.cookies.set(COOKIE_NAME, serializeCookie(geo), {
                 path: COOKIE_OPTIONS.path,
                 httpOnly: COOKIE_OPTIONS.httpOnly,
@@ -213,7 +438,8 @@ export function withGeoRedirect(
         }
 
         // Look up locale for the user's country
-        const locale = (geo.country && localeMap[geo.country]) || defaultLocale;
+        const countryCode = geo.location?.country?.code;
+        const locale = (countryCode && localeMap[countryCode]) || defaultLocale;
 
         // If resolved locale is the default and path has no locale prefix, no redirect needed
         if (locale === defaultLocale) {

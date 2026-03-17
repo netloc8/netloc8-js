@@ -2,12 +2,12 @@
  * Integration tests — run against a live NetLoc8 API server.
  *
  * Prerequisites:
- *   1. API server running at NETLOC8_TEST_API_URL (default: https://netloc8.com)
+ *   1. API server running at NETLOC8_TEST_API_URL (default: https://api.netloc8.com)
  *   2. A valid secret key in NETLOC8_TEST_SK
  *   3. A valid publishable key in NETLOC8_TEST_PK
  *
  * Usage:
- *   NETLOC8_TEST_SK=sk_... NETLOC8_TEST_PK=pk_... bun test packages/netloc8-js/src/integration.test.ts
+ *   NETLOC8_TEST_SK=sk_... NETLOC8_TEST_PK=pk_... bun test packages/core/src/integration.test.ts
  *
  * These tests are skipped by default unless NETLOC8_TEST_SK is set.
  *
@@ -18,7 +18,7 @@
 import { describe, test, expect } from 'bun:test';
 import { fetchGeo, fetchTimezone, fetchMyGeo, fetchMyTimezone, normalizeApiResponse } from './index';
 
-const API_URL = process.env.NETLOC8_TEST_API_URL ?? 'https://netloc8.com';
+const API_URL = process.env.NETLOC8_TEST_API_URL ?? 'https://api.netloc8.com';
 const SK = process.env.NETLOC8_TEST_SK;
 const PK = process.env.NETLOC8_TEST_PK;
 const SKIP = !SK;
@@ -32,25 +32,25 @@ describe.skipIf(SKIP)('integration: live API', () => {
     }
 
     describe('fetchGeo (secret key)', () => {
-        test('returns geo data for 8.8.8.8', async () => {
+        test('returns nested geo data for 8.8.8.8', async () => {
             const raw = await fetchGeo('8.8.8.8', { apiKey: SK, apiUrl: API_URL, timeout: 10_000 });
 
             expect(raw).not.toBeNull();
-            expect(raw!.ip).toBe('8.8.8.8');
-            expect(raw!.country).toBeDefined();
-            expect(raw!.timezone).toBeDefined();
+            expect(raw!.query).toBeDefined();
+            expect((raw!.query as Record<string, unknown>).value).toBe('8.8.8.8');
+            expect(raw!.location).toBeDefined();
         });
 
-        test('normalizes the response into a Geo object', async () => {
+        test('normalizes the response into a nested Geo object', async () => {
             const raw = await fetchGeo('8.8.8.8', { apiKey: SK, apiUrl: API_URL, timeout: 10_000 });
             expect(raw).not.toBeNull();
 
             const geo = normalizeApiResponse(raw!, '8.8.8.8');
 
-            expect(geo.ip).toBe('8.8.8.8');
-            expect(typeof geo.country).toBe('string');
-            expect(typeof geo.timezone).toBe('string');
-            expect(geo.timezoneFromClient).toBe(false);
+            expect(geo.query?.value).toBe('8.8.8.8');
+            expect(geo.location?.country?.code).toBeDefined();
+            expect(geo.location?.timezone).toBeDefined();
+            expect(geo.location?.timezoneFromClient).toBe(false);
         });
 
         test('returns null for an invalid IP', async () => {
@@ -70,12 +70,7 @@ describe.skipIf(SKIP)('integration: live API', () => {
     });
 
     describe.skipIf(!PK)('fetchMyGeo (publishable key)', () => {
-        // Note: /ip/me from localhost returns loopback IP (::1 or 127.0.0.1)
-        // with no geo data. We verify the API accepts the key and responds
-        // with the expected shape, not that geo fields are populated.
         test('API accepts publishable key and returns a response', async () => {
-            // Publishable keys require Origin header (browsers send this
-            // automatically; we simulate it here for the test environment).
             const originalFetch = globalThis.fetch;
             globalThis.fetch = ((input: RequestInfo | URL, init?: RequestInit) => {
                 const headers = new Headers(init?.headers);
@@ -86,13 +81,11 @@ describe.skipIf(SKIP)('integration: live API', () => {
             const raw = await fetchMyGeo({ apiKey: PK, apiUrl: API_URL, timeout: 10_000 });
             globalThis.fetch = originalFetch;
 
-            // Response may be null (non-200) for loopback IPs depending on
-            // API behavior. If the API returns a body, verify the shape.
             if (raw !== null) {
-                expect(raw.ip).toBeDefined();
+                expect(raw.query).toBeDefined();
                 const geo = normalizeApiResponse(raw);
-                expect(geo.ip).toBeDefined();
-                expect(geo.timezoneFromClient).toBe(false);
+                expect(geo.query?.value).toBeDefined();
+                expect(geo.location?.timezoneFromClient).toBe(false);
             }
         });
     });
@@ -109,7 +102,6 @@ describe.skipIf(SKIP)('integration: live API', () => {
             const tz = await fetchMyTimezone({ apiKey: PK, apiUrl: API_URL, timeout: 10_000 });
             globalThis.fetch = originalFetch;
 
-            // May be null for loopback IPs; if present, should be a string
             if (tz !== null) {
                 expect(typeof tz).toBe('string');
                 expect(tz.includes('/')).toBe(true);
