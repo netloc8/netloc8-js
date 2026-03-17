@@ -306,6 +306,9 @@ export function createProxy(options?: CreateProxyOptions):
         const apiKey = options?.apiKey ?? process.env.NETLOC8_API_KEY;
         const apiUrl = options?.apiUrl ?? process.env.NETLOC8_API_URL;
         const timeout = options?.timeout ?? 1500;
+        const clientId = typeof __PKG_NAME__ !== 'undefined' && typeof __PKG_VERSION__ !== 'undefined'
+            ? `${__PKG_NAME__}/${__PKG_VERSION__}`
+            : undefined;
 
         // Security: Remove any incoming spoofed headers
         const requestHeaders = new Headers(request.headers);
@@ -343,12 +346,40 @@ export function createProxy(options?: CreateProxyOptions):
         const platformGeo = getGeoFromPlatformHeaders(request.headers);
 
         // 4. Decide whether to call the API
+        //    With API key: await full enrichment (city, coords, ASN, etc.).
+        //    Without key: attempt lookup with a short timeout to avoid
+        //    blocking the page — fall back to platform headers if it
+        //    doesn't complete in time.
+        const ipChanged = cookieGeo.query?.value !== clientIp;
         let apiGeo: Geo | undefined;
 
-        if (clientIp && isPublicIp(clientIp) && !platformGeo.location?.country?.code && !cookieTimezone) {
-            const raw = await fetchGeo(clientIp, { apiKey, apiUrl, timeout, clientId: typeof __PKG_NAME__ !== 'undefined' ? `${__PKG_NAME__}/${__PKG_VERSION__}` : undefined });
-            if (raw) {
-                apiGeo = normalizeApiResponse(raw, clientIp);
+        // Dev-mode warning: only on new visitors to avoid console spam
+        if (process.env.NODE_ENV !== 'production' && !apiKey && ipChanged) {
+            if (platformGeo.location?.country?.code) {
+                console.warn(
+                    '[netloc8] No API key configured \u2014 using platform headers only (country-level).\n' +
+                    '          Get a free key at https://netloc8.com for city-level geo.'
+                );
+            } else {
+                console.warn(
+                    '[netloc8] No API key configured and no platform geo headers detected.\n' +
+                    '          A free API key enables faster geo responses. Get one at https://netloc8.com'
+                );
+            }
+        }
+
+        if (clientIp && isPublicIp(clientIp) && ipChanged) {
+            if (apiKey) {
+                const raw = await fetchGeo(clientIp, { apiKey, apiUrl, timeout, clientId });
+                if (raw) {
+                    apiGeo = normalizeApiResponse(raw, clientIp);
+                }
+            } else {
+                // No API key: attempt geo lookup with a short timeout.
+                // Falls back to platform headers if the request doesn't complete.
+                fetchGeo(clientIp, {
+                    apiUrl, timeout: 100, clientId, allowAnonymous: true,
+                }).catch(() => {});
             }
         }
 
@@ -394,7 +425,7 @@ export function createProxy(options?: CreateProxyOptions):
         });
 
         // 8. Set/update the cookie if needed
-        if (!cookieValue || cookieGeo.query?.value !== clientIp) {
+        if (!cookieValue || ipChanged) {
             response.cookies.set(COOKIE_NAME, serializeCookie(geo), {
                 path: COOKIE_OPTIONS.path,
                 httpOnly: COOKIE_OPTIONS.httpOnly,

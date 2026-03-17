@@ -1,5 +1,20 @@
 import type { Geo } from './types';
 
+/** Lazy-cached Intl.DisplayNames instance for country code → name lookups. */
+let regionNames: Intl.DisplayNames | undefined;
+
+function getRegionNames(): Intl.DisplayNames | undefined {
+    if (regionNames) {
+        return regionNames;
+    }
+    try {
+        regionNames = new Intl.DisplayNames(['en'], { type: 'region' });
+        return regionNames;
+    } catch {
+        return undefined;
+    }
+}
+
 /**
  * Extract geo information from platform/CDN request headers.
  * Supports Vercel, Cloudflare, and CloudFront.
@@ -77,6 +92,18 @@ export function getGeoFromPlatformHeaders(headers: Headers): Partial<Geo> {
         if (!geo.location) geo.location = {};
         if (!geo.location.country) geo.location.country = {};
         geo.location.country.code = cfrontCountry;
+    }
+
+    // --- Enrich country code → name via Intl.DisplayNames (zero-cost, no API call) ---
+
+    if (geo.location?.country?.code && !geo.location.country.name) {
+        const names = getRegionNames();
+        if (names) {
+            const name = names.of(geo.location.country.code);
+            if (name) {
+                geo.location.country.name = name;
+            }
+        }
     }
 
     return geo;
