@@ -23,11 +23,14 @@ framework-specific integrations, see
 bun add @netloc8/core
 ```
 
+[Documentation](https://netloc8.com/docs) · [API Reference](https://netloc8.com/docs/api)
+
 ## Usage
 
 ### Detect the visitor's location (browser)
 
-The simplest way to get started — call `fetchMyGeo()` with a publishable key.
+The simplest way to get started — call `fetchMyGeo()` with a publishable
+key, available from your [NetLoc8 dashboard](https://netloc8.com).
 No IP address needed; the API detects the caller's IP automatically:
 
 ```typescript

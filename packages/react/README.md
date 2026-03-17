@@ -22,6 +22,8 @@ bun add @netloc8/react
 
 **Peer dependencies:** `react >= 19`
 
+[Documentation](https://netloc8.com/docs) · [API Reference](https://netloc8.com/docs/api)
+
 ## Quick Start
 
 ### Proxy Mode (SSR)
@@ -49,7 +51,8 @@ function LocationBanner() {
 
 ### Direct Mode (SPA)
 
-For static sites or SPAs without server-side rendering, pass an API key. The Provider
+For static sites or SPAs without server-side rendering, pass an API key
+(available from your [NetLoc8 dashboard](https://netloc8.com)). The Provider
 calls the NetLoc8 API directly from the browser on mount:
 
 ```tsx

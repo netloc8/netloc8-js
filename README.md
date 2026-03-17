@@ -49,6 +49,8 @@ regional content delivery, and privacy-respecting analytics.
 
 See each package's README for detailed usage instructions.
 
+[Documentation](https://netloc8.com/docs) · [API Reference](https://netloc8.com/docs/api) · [Dashboard](https://netloc8.com)
+
 ## Response Shape
 
 All packages return a nested `Geo` object matching the API's `GeolocationResult`:

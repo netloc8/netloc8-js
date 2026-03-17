@@ -20,11 +20,14 @@ bun add @netloc8/nextjs
 
 **Peer dependencies:** `next >= 16`, `react >= 19`
 
+[Documentation](https://netloc8.com/docs) · [API Reference](https://netloc8.com/docs/api)
+
 ## Quick Start
 
 ### 1. Add geo to a Client Component (simplest)
 
-Wrap your root layout with the Provider and use the `useGeo()` hook in any client component. The page renders immediately — geo data loads in the background:
+Wrap your root layout with the Provider and use the `useGeo()` hook in any
+client component. Get your API key from the [NetLoc8 dashboard](https://netloc8.com) — the page renders immediately and geo data loads in the background:
 
 ```tsx
 // app/layout.tsx
