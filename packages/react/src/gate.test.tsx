@@ -4,8 +4,9 @@ import { createElement } from 'react';
 import { GeoGate } from './gate';
 import { GeoContext } from './context';
 import type { Geo } from '@netloc8/core';
+import type { GeoGateProps } from './gate';
 
-function renderGate(geo: Geo, props: Record<string, unknown>, children: string, fallback?: string) {
+function renderGate(geo: Geo, props: Omit<Partial<GeoGateProps>, 'children' | 'fallback'>, children: string, fallback?: string) {
     return renderToString(
         createElement(
             GeoContext.Provider,
