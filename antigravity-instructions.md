@@ -10,3 +10,6 @@ This is a Bun workspace, and `npm publish` fails to resolve `workspace:*` protoc
 ## 2. Package Manager
 **Always use Bun (`bun install`, `bun run`, `bun test`).**
 Do not use `npm` or `yarn` commands within this repository to avoid generating `package-lock.json` cruft or misaligning with the Bun workspace configuration.
+
+## 3. Public Repository
+**This is a public open-source repository.** Keep committed content focused on SDK usage, API surface, and contributor guidance. Implementation details about backend services belong in separate, private documentation — not in source files, READMEs, commit messages, or PR descriptions.

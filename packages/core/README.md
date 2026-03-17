@@ -1,4 +1,4 @@
-# @netloc8/netloc8-js
+# @netloc8/core
 
 Zero-dependency core library for the NetLoc8 geolocation SDK. Provides the
 API client, IP detection, platform header parsing, cookie management,
@@ -11,7 +11,7 @@ and geo-source reconciliation.
 ## Install
 
 ```bash
-bun add @netloc8/netloc8-js
+bun add @netloc8/core
 ```
 
 ## Usage
@@ -19,7 +19,7 @@ bun add @netloc8/netloc8-js
 ### Fetch geo data for an IP
 
 ```typescript
-import { fetchGeo } from '@netloc8/netloc8-js';
+import { fetchGeo } from '@netloc8/core';
 
 const geo = await fetchGeo( '203.0.113.42', {
     apiKey: 'sk_...',
@@ -32,7 +32,7 @@ console.log( geo );
 ### Fetch only the timezone
 
 ```typescript
-import { fetchTimezone } from '@netloc8/netloc8-js';
+import { fetchTimezone } from '@netloc8/core';
 
 const tz = await fetchTimezone( '203.0.113.42', {
     apiKey: 'sk_...',
@@ -44,7 +44,7 @@ console.log( tz ); // "America/Chicago"
 ### Client-side (browser) — fetch for the caller's own IP
 
 ```typescript
-import { fetchMyGeo, fetchMyTimezone } from '@netloc8/netloc8-js';
+import { fetchMyGeo, fetchMyTimezone } from '@netloc8/core';
 
 const geo = await fetchMyGeo( { apiKey: 'pk_...' } );
 const tz  = await fetchMyTimezone( { apiKey: 'pk_...' } );
