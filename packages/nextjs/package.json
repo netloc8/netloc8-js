@@ -5,6 +5,7 @@
     "keywords": [
         "nextjs",
         "next",
+        "next-plugin",
         "geolocation",
         "ip-geolocation",
         "geoip",
@@ -17,7 +18,9 @@
         "eu-detection",
         "gdpr",
         "locale-redirect",
+        "geo-blocking",
         "cookie-consent",
+        "location-detection",
         "netloc8"
     ],
     "homepage": "https://netloc8.com",

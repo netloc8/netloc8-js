@@ -4,6 +4,7 @@
     "description": "React geolocation components. Provider, useGeo() hook, and GeoGate for conditional rendering by country, region, city, and EU membership.",
     "keywords": [
         "react",
+        "react-hook",
         "geolocation",
         "ip-geolocation",
         "geoip",
@@ -13,6 +14,8 @@
         "gdpr",
         "cookie-consent",
         "country-detection",
+        "location-detection",
+        "geo-blocking",
         "timezone",
         "react-context",
         "netloc8"
