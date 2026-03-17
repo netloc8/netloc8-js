@@ -342,7 +342,7 @@ export function createProxy(options?: CreateProxyOptions):
         // 4. Decide whether to call the API
         let apiGeo: Geo | undefined;
 
-        if (clientIp && isPublicIp(clientIp) && !platformGeo.location?.timezone && !cookieTimezone) {
+        if (clientIp && isPublicIp(clientIp) && !platformGeo.location?.country?.code && !cookieTimezone) {
             const raw = await fetchGeo(clientIp, { apiKey, apiUrl, timeout, clientId: typeof __PKG_NAME__ !== 'undefined' ? `${__PKG_NAME__}/${__PKG_VERSION__}` : undefined });
             if (raw) {
                 apiGeo = normalizeApiResponse(raw, clientIp);
