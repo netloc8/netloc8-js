@@ -17,7 +17,7 @@ regional content delivery, and privacy-respecting analytics.
 
 - **Framework-native** — not just an API wrapper. Server-side proxy, React context, conditional rendering components
 - **Smart timezone** — IP-based on first request, browser-confirmed on hydration, cookie-cached thereafter. 100% accurate after first visit
-- **EU detection built in** — `unions` array makes GDPR gating a one-liner, no country-code lists to maintain
+- **Privacy compliance ready** — `isEU()` helper for GDPR, country and region fields for CCPA and other regulations
 - **Zero-config RUM** — Core Web Vitals, Navigation Timing, and error tracking enabled by default
 - **Type-safe** — full TypeScript types for every response field
 
