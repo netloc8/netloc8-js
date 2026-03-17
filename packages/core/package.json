@@ -35,11 +35,13 @@
         ".": {
             "bun": "./src/index.ts",
             "import": "./dist/index.mjs",
+            "require": "./dist/index.cjs",
             "types": "./dist/index.d.mts"
         },
         "./telemetry/rum": {
             "bun": "./src/telemetry/rum.ts",
             "import": "./dist/telemetry/rum.mjs",
+            "require": "./dist/telemetry/rum.cjs",
             "types": "./dist/telemetry/rum.d.mts"
         }
     },

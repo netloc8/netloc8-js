@@ -1,9 +1,9 @@
 import { readFileSync } from 'node:fs';
-import { defineConfig } from 'tsdown';
+import { type UserConfig } from 'tsdown';
 
 const pkg = JSON.parse(readFileSync('./package.json', 'utf-8'));
 
-export default defineConfig([
+const config: UserConfig[] = [
     {
         entry: ['./src/index.ts'],
         format: 'esm',
@@ -29,4 +29,6 @@ export default defineConfig([
             '__PKG_VERSION__': JSON.stringify(pkg.version),
         },
     },
-]);
+];
+
+export default config;
