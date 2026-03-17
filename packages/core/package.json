@@ -1,6 +1,6 @@
 {
     "name": "@netloc8/core",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "description": "IP geolocation API client for JavaScript. Look up country, city, timezone, coordinates, ASN, and EU membership for any IP address.",
     "keywords": [
         "geolocation",
@@ -34,15 +34,28 @@
     "exports": {
         ".": {
             "bun": "./src/index.ts",
-            "import": "./dist/index.mjs",
-            "types": "./dist/index.d.mts"
+            "import": {
+                "types": "./dist/index.d.mts",
+                "default": "./dist/index.mjs"
+            },
+            "require": {
+                "types": "./dist/index.d.cts",
+                "default": "./dist/index.cjs"
+            }
         },
         "./telemetry/rum": {
             "bun": "./src/telemetry/rum.ts",
-            "import": "./dist/telemetry/rum.mjs",
-            "types": "./dist/telemetry/rum.d.mts"
+            "import": {
+                "types": "./dist/telemetry/rum.d.mts",
+                "default": "./dist/telemetry/rum.mjs"
+            },
+            "require": {
+                "types": "./dist/telemetry/rum.d.cts",
+                "default": "./dist/telemetry/rum.cjs"
+            }
         }
     },
+    "main": "./dist/index.cjs",
     "files": [
         "dist/"
     ],
