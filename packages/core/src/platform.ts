@@ -79,5 +79,19 @@ export function getGeoFromPlatformHeaders(headers: Headers): Partial<Geo> {
         geo.location.country.code = cfrontCountry;
     }
 
+    // --- Enrich country code → name via Intl.DisplayNames (zero-cost, no API call) ---
+
+    if (geo.location?.country?.code && !geo.location.country.name) {
+        try {
+            const regionNames = new Intl.DisplayNames(['en'], { type: 'region' });
+            const name = regionNames.of(geo.location.country.code);
+            if (name) {
+                geo.location.country.name = name;
+            }
+        } catch {
+            // Intl.DisplayNames not available — skip
+        }
+    }
+
     return geo;
 }
