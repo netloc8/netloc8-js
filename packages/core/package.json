@@ -1,6 +1,6 @@
 {
     "name": "@netloc8/core",
-    "version": "0.2.0",
+    "version": "1.0.0",
     "type": "module",
     "license": "Elastic-2.0",
     "exports": {
@@ -8,6 +8,11 @@
             "bun": "./src/index.ts",
             "import": "./dist/index.mjs",
             "types": "./dist/index.d.mts"
+        },
+        "./telemetry/rum": {
+            "bun": "./src/telemetry/rum.ts",
+            "import": "./dist/telemetry/rum.mjs",
+            "types": "./dist/telemetry/rum.d.mts"
         }
     },
     "files": [
@@ -17,6 +22,9 @@
         "build": "tsdown",
         "clean": "rm -rf dist",
         "test": "bun test src/"
+    },
+    "dependencies": {
+        "web-vitals": "^4.2.4"
     },
     "engines": {
         "node": ">=18"
