@@ -206,7 +206,11 @@ geo.meta?.precision;              // "city"
 ### EU Detection
 
 ```typescript
-const isEU = geo.location?.country?.unions?.includes( 'EU' ) ?? false;
+import { isEU } from '@netloc8/nextjs';
+
+if ( isEU( geo ) ) {
+    showCookieConsent();
+}
 ```
 
 See [`@netloc8/core`](../core/) for the full `Geo` type reference.

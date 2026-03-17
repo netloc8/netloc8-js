@@ -169,6 +169,7 @@ import { GeoGate } from '@netloc8/react';
 |------|------|-------------|
 | `children` | `ReactNode` | Content to show when conditions match |
 | `fallback` | `ReactNode` | Content to show when conditions don't match |
+| `loading` | `ReactNode` | Content to show while geo data is loading |
 | `country` | `string \| string[]` | Match `geo.location?.country?.code` |
 | `region` | `string \| string[]` | Match `geo.location?.region?.code` |
 | `city` | `string \| string[]` | Match `geo.location?.city` |
