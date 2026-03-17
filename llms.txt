@@ -20,7 +20,7 @@
 - **Direct mode**: Browser calls the NetLoc8 edge API using a publishable key (pk_). Fastest option for SPAs.
 - **Proxy mode**: Server resolves geo data before rendering. Best for SEO and first-paint accuracy.
 - **GeoGate**: React component for conditional rendering by country, region, city, or EU membership.
-- **isEU()**: Helper function to check EU membership for GDPR/cookie consent.
+- **isEU()**: Helper function to check EU membership for GDPR compliance. Use country/region fields for CCPA.
 - **Cookie caching**: After first lookup, geo data is cached in __netloc8 cookie. Subsequent visits use cached data.
 - **Browser timezone reconciliation**: IP-based timezone on first request, browser-confirmed on hydration.
 
