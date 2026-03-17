@@ -9,23 +9,29 @@ import type { Geo } from './types';
 export function getGeoFromPlatformHeaders(headers: Headers): Partial<Geo> {
     const geo: Partial<Geo> = {};
 
-    // Vercel headers
+    // --- Vercel headers ---
+
     const vercelCountry = headers.get('x-vercel-ip-country');
     if (vercelCountry) {
-        geo.country = vercelCountry;
+        if (!geo.location) geo.location = {};
+        if (!geo.location.country) geo.location.country = {};
+        geo.location.country.code = vercelCountry;
     }
 
     const vercelRegion = headers.get('x-vercel-ip-country-region');
     if (vercelRegion) {
-        geo.region = vercelRegion;
+        if (!geo.location) geo.location = {};
+        if (!geo.location.region) geo.location.region = {};
+        geo.location.region.code = vercelRegion;
     }
 
     const vercelCity = headers.get('x-vercel-ip-city');
     if (vercelCity !== null) {
+        if (!geo.location) geo.location = {};
         try {
-            geo.city = decodeURIComponent(vercelCity);
+            geo.location.city = decodeURIComponent(vercelCity);
         } catch {
-            geo.city = vercelCity;
+            geo.location.city = vercelCity;
         }
     }
 
@@ -33,7 +39,9 @@ export function getGeoFromPlatformHeaders(headers: Headers): Partial<Geo> {
     if (vercelLat) {
         const lat = parseFloat(vercelLat);
         if (isFinite(lat)) {
-            geo.latitude = lat;
+            if (!geo.location) geo.location = {};
+            if (!geo.location.coordinates) geo.location.coordinates = {};
+            geo.location.coordinates.latitude = lat;
         }
     }
 
@@ -41,25 +49,34 @@ export function getGeoFromPlatformHeaders(headers: Headers): Partial<Geo> {
     if (vercelLng) {
         const lng = parseFloat(vercelLng);
         if (isFinite(lng)) {
-            geo.longitude = lng;
+            if (!geo.location) geo.location = {};
+            if (!geo.location.coordinates) geo.location.coordinates = {};
+            geo.location.coordinates.longitude = lng;
         }
     }
 
     const vercelTz = headers.get('x-vercel-ip-timezone');
     if (vercelTz) {
-        geo.timezone = vercelTz;
+        if (!geo.location) geo.location = {};
+        geo.location.timezone = vercelTz;
     }
 
-    // Cloudflare headers
+    // --- Cloudflare headers ---
+
     const cfCountry = headers.get('cf-ipcountry');
-    if (cfCountry && !geo.country) {
-        geo.country = cfCountry;
+    if (cfCountry && !geo.location?.country?.code) {
+        if (!geo.location) geo.location = {};
+        if (!geo.location.country) geo.location.country = {};
+        geo.location.country.code = cfCountry;
     }
 
-    // CloudFront headers
+    // --- CloudFront headers ---
+
     const cfrontCountry = headers.get('cloudfront-viewer-country');
-    if (cfrontCountry && !geo.country) {
-        geo.country = cfrontCountry;
+    if (cfrontCountry && !geo.location?.country?.code) {
+        if (!geo.location) geo.location = {};
+        if (!geo.location.country) geo.location.country = {};
+        geo.location.country.code = cfrontCountry;
     }
 
     return geo;
