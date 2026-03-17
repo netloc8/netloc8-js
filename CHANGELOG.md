@@ -5,6 +5,33 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project adheres to [Semantic Versioning](https://semver.org/).
 
 
+## [1.0.0] — 2026-03-17
+
+### ⚠️ Breaking Changes
+- **Nested `Geo` interface** — flat fields replaced with nested structure matching the backend `GeolocationResult` schema (e.g. `geo.country` → `geo.location?.country?.code`, `geo.isEU` → `geo.location?.country?.unions?.includes('EU')`)
+- **API URL** — default changed from `https://netloc8.com` to `https://api.netloc8.com`
+- **API paths** — `/api/v1/ip/...` → `/v1/ip/...`
+- **`GeoGate` props** — `country`, `region`, `city`, `eu` now read from nested paths
+- **Header transport** — `x-netloc8-*` headers rewritten for nested Geo field mapping (25 headers)
+
+### Added
+- **Browser validation headers** — `X-NL8-TZ`, `X-NL8-Lang`, `X-NL8-Conn`, `X-NL8-RTT` sent on every API request (~120 bytes, zero-config)
+- **Structured error parsing** — API errors parsed into `ApiErrorResponse` with error codes and messages
+- **RUM telemetry** — new `@netloc8/core/telemetry/rum` subpath export, collects Core Web Vitals + Navigation Timing + JS errors via `navigator.sendBeacon()`. Enabled by default (`rum={true}`), opt out with `rum={false}`
+- **`web-vitals` dependency** — added as a regular dependency (4KB gzipped, lazy-loaded at runtime)
+- **`signals.ts` module** — shared browser signal collection (`getTimezone`, `getLanguage`, `getConnectionType`, `getDeviceType`) used by both API headers and RUM beacons
+- **Direct/proxy mode** — `NetLoc8Provider` supports `mode="direct"` (browser → API with publishable key) and `mode="proxy"` (server-resolved via Next.js)
+- **Deep-merge `reconcileGeo`** — nested object merge with priority (api > platform > cookie) without clobbering sibling fields
+
+### Changed
+- `parseCookie`/`serializeCookie` validate nested Geo shape with strict field picking
+- `getGeoFromPlatformHeaders` returns nested Geo from Vercel/Cloudflare/CloudFront headers
+- All packages bumped to 1.0.0
+
+### Removed
+- Flat `Geo` interface fields (`country`, `countryName`, `isEU`, `ip`, `latitude`, etc.)
+- `CF_GEO_PLAN.md` — implementation complete, deferred items tracked in backend `docs/SDK_ROADMAP.md`
+
 ## [0.2.0] — 2026-03-17
 
 ### Changed
