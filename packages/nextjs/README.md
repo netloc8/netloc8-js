@@ -8,7 +8,7 @@ Add **IP geolocation** to any **Next.js** application. Detect visitor country,
 city, timezone, and EU membership in both Server and Client Components — with
 a server-side proxy that resolves geo data before your page renders.
 
-Show cookie consent to EU users, redirect by locale, personalize by region,
+Show cookie consent to EU users (GDPR), redirect by locale, gate by region (CCPA),
 display local timezone — all with SSR support and automatic browser timezone
 reconciliation.
 

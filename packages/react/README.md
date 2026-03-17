@@ -8,7 +8,7 @@ Add **IP geolocation** to any **React** application. Detect visitor country,
 city, timezone, and EU membership with a context Provider, `useGeo()` hook,
 and `<GeoGate>` component for conditional rendering by location.
 
-Show cookie consent to EU users, personalize content by region, display
+Show cookie consent to EU users (GDPR), gate content by region (CCPA), display
 local timezone — all with zero backend setup using a publishable API key.
 > **Tip:** Using a specific framework? Install the framework package instead
 > (e.g. [`@netloc8/nextjs`](../nextjs/) for Next.js) — it re-exports
