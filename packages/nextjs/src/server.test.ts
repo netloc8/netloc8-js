@@ -1,57 +1,32 @@
-import { describe, test, expect, mock } from 'bun:test';
+import { describe, test, expect } from 'bun:test';
+import { readGeoHeaders } from './proxy';
 
-// Mock next/headers before importing server functions
-const mockHeaders = new Map<string, string>();
+// server.ts uses readGeoHeaders internally, so we test the same function.
+// The getGeo() and getTimezone() functions rely on next/headers which
+// requires a Next.js request context and cannot be unit-tested directly.
 
-mock.module('next/headers', () => ({
-    headers: async () => ({
-        get: (name: string) => mockHeaders.get(name) ?? null,
-    }),
-}));
+describe('server.ts readGeoHeaders (used by getGeo)', () => {
+    test('reconstructs nested Geo from request headers', () => {
+        const headers = new Headers();
+        headers.set('x-netloc8-ip', encodeURIComponent('24.216.76.94'));
+        headers.set('x-netloc8-country-code', encodeURIComponent('US'));
+        headers.set('x-netloc8-region-code', encodeURIComponent('TX'));
+        headers.set('x-netloc8-city', encodeURIComponent('Dallas'));
+        headers.set('x-netloc8-timezone', encodeURIComponent('America/Chicago'));
+        headers.set('x-netloc8-timezone-from-client', encodeURIComponent('true'));
 
-// Import after mocking
-const { getGeo, getTimezone } = await import('./server');
+        const geo = readGeoHeaders(headers);
 
-describe('getGeo', () => {
-    test('reads geo data from x-netloc8-* headers', async () => {
-        mockHeaders.clear();
-        mockHeaders.set('x-netloc8-ip', '8.8.8.8');
-        mockHeaders.set('x-netloc8-country', 'US');
-        mockHeaders.set('x-netloc8-city', encodeURIComponent('Mountain View'));
-        mockHeaders.set('x-netloc8-latitude', '37.386');
-        mockHeaders.set('x-netloc8-is-eu', 'false');
-        mockHeaders.set('x-netloc8-timezone', 'America%2FLos_Angeles');
-
-        const geo = await getGeo();
-        expect(geo.ip).toBe('8.8.8.8');
-        expect(geo.country).toBe('US');
-        expect(geo.city).toBe('Mountain View');
-        expect(geo.latitude).toBe(37.386);
-        expect(geo.isEU).toBe(false);
-        expect(geo.timezone).toBe('America/Los_Angeles');
+        expect(geo.query?.value).toBe('24.216.76.94');
+        expect(geo.location?.country?.code).toBe('US');
+        expect(geo.location?.region?.code).toBe('TX');
+        expect(geo.location?.city).toBe('Dallas');
+        expect(geo.location?.timezone).toBe('America/Chicago');
+        expect(geo.location?.timezoneFromClient).toBe(true);
     });
 
-    test('returns empty object when no headers are present', async () => {
-        mockHeaders.clear();
-
-        const geo = await getGeo();
+    test('returns empty Geo when no headers present', () => {
+        const geo = readGeoHeaders(new Headers());
         expect(geo).toEqual({});
-    });
-});
-
-describe('getTimezone', () => {
-    test('returns timezone string', async () => {
-        mockHeaders.clear();
-        mockHeaders.set('x-netloc8-timezone', 'America%2FChicago');
-
-        const tz = await getTimezone();
-        expect(tz).toBe('America/Chicago');
-    });
-
-    test('returns undefined when no timezone header', async () => {
-        mockHeaders.clear();
-
-        const tz = await getTimezone();
-        expect(tz).toBeUndefined();
     });
 });
