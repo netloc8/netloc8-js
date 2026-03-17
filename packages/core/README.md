@@ -139,9 +139,10 @@ interface Geo {
 }
 ```
 
-### EU Detection
+### EU Detection / Privacy Compliance
 
-The SDK provides an `isEU()` helper for GDPR cookie consent checks:
+The SDK provides an `isEU()` helper for GDPR cookie consent checks.
+For CCPA and other regional regulations, use the `country` and `region` fields:
 
 ```typescript
 import { isEU } from '@netloc8/core';
