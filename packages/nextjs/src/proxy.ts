@@ -55,7 +55,7 @@ const HEADER_ENTRIES: HeaderEntry[] = [
     {
         header: 'x-netloc8-ip-version',
         get: (g) => g.query?.ipVersion,
-        set: (g, v) => { if (!g.query) g.query = {}; g.query.ipVersion = parseFloat(v); },
+        set: (g, v) => { const n = parseFloat(v); if (!Number.isFinite(n)) return; if (!g.query) g.query = {}; g.query.ipVersion = n; },
         type: 'number',
     },
     {
@@ -169,7 +169,8 @@ const HEADER_ENTRIES: HeaderEntry[] = [
         set: (g, v) => {
             if (!g.location) g.location = {};
             if (!g.location.coordinates) g.location.coordinates = {};
-            g.location.coordinates.latitude = parseFloat(v);
+            const n = parseFloat(v); if (!Number.isFinite(n)) return;
+            g.location.coordinates.latitude = n;
         },
         type: 'number',
     },
@@ -179,7 +180,8 @@ const HEADER_ENTRIES: HeaderEntry[] = [
         set: (g, v) => {
             if (!g.location) g.location = {};
             if (!g.location.coordinates) g.location.coordinates = {};
-            g.location.coordinates.longitude = parseFloat(v);
+            const n = parseFloat(v); if (!Number.isFinite(n)) return;
+            g.location.coordinates.longitude = n;
         },
         type: 'number',
     },
@@ -189,7 +191,8 @@ const HEADER_ENTRIES: HeaderEntry[] = [
         set: (g, v) => {
             if (!g.location) g.location = {};
             if (!g.location.coordinates) g.location.coordinates = {};
-            g.location.coordinates.accuracyRadius = parseFloat(v);
+            const n = parseFloat(v); if (!Number.isFinite(n)) return;
+            g.location.coordinates.accuracyRadius = n;
         },
         type: 'number',
     },
@@ -208,7 +211,7 @@ const HEADER_ENTRIES: HeaderEntry[] = [
     {
         header: 'x-netloc8-geo-confidence',
         get: (g) => g.location?.geoConfidence,
-        set: (g, v) => { if (!g.location) g.location = {}; g.location.geoConfidence = parseFloat(v); },
+        set: (g, v) => { const n = parseFloat(v); if (!Number.isFinite(n)) return; if (!g.location) g.location = {}; g.location.geoConfidence = n; },
         type: 'number',
     },
     {

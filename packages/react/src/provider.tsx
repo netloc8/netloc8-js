@@ -8,6 +8,7 @@ import {
     parseCookie,
     serializeCookie,
     COOKIE_NAME,
+    COOKIE_OPTIONS,
 } from '@netloc8/core';
 import { GeoContext, type GeoContextValue } from './context';
 
@@ -175,12 +176,12 @@ export function NetLoc8Provider({
         setGeo((prev) => {
             const currentTz = prev.location?.timezone;
 
-            // If we already have a timezone from the API and it matches, nothing to do
-            if (currentTz === browserTz && prev.location?.timezoneFromClient === false) {
+            // If we already have a browser-confirmed timezone that matches, nothing to do
+            if (currentTz === browserTz && prev.location?.timezoneFromClient === true) {
                 return prev;
             }
 
-            // If timezone differs or was missing, use browser timezone
+            // If timezone differs, was missing, or hasn't been browser-confirmed yet
             const updated: Geo = {
                 ...prev,
                 location: {
@@ -190,9 +191,9 @@ export function NetLoc8Provider({
                 },
             };
 
-            // Write to cookie
+            // Write to cookie using shared options
             try {
-                document.cookie = `${COOKIE_NAME}=${serializeCookie(updated)}; path=/; max-age=2592000; SameSite=Lax${location.protocol === 'https:' ? '; Secure' : ''}`;
+                document.cookie = `${COOKIE_NAME}=${serializeCookie(updated)}; path=${COOKIE_OPTIONS.path}; max-age=${COOKIE_OPTIONS.maxAge}; SameSite=${COOKIE_OPTIONS.sameSite}${COOKIE_OPTIONS.secure ? '; Secure' : ''}`;
             } catch {
                 // Cookie write failed — SSR or cookie disabled
             }

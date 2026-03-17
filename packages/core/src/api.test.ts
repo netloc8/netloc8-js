@@ -97,7 +97,12 @@ describe('fetchGeo', () => {
 
     test('sends X-NL8-TZ browser validation header when Intl is available', async () => {
         const originalFetch = globalThis.fetch;
+        const originalWindow = globalThis.window;
         let capturedHeaders: Record<string, string> = {};
+
+        // Mock window so getTimezone() detects a browser environment
+        // @ts-expect-error — minimal mock
+        globalThis.window = {};
 
         globalThis.fetch = mock((_url: string | URL | Request, init?: RequestInit) => {
             capturedHeaders = Object.fromEntries(
@@ -108,11 +113,12 @@ describe('fetchGeo', () => {
 
         await fetchGeo('8.8.8.8');
 
-        // Intl is available in Bun, so this should be present
+        // Intl is available in Bun, and window is now mocked, so this should be present
         expect(capturedHeaders['X-NL8-TZ']).toBeDefined();
         expect(typeof capturedHeaders['X-NL8-TZ']).toBe('string');
 
         globalThis.fetch = originalFetch;
+        globalThis.window = originalWindow;
     });
 
     test('encodes IP address in URL', async () => {

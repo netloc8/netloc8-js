@@ -8,9 +8,11 @@
  * browser-only APIs and return undefined/fallbacks.
  */
 
-/** Returns the browser's IANA timezone, or undefined if unavailable. */
+/** Returns the browser's IANA timezone, or undefined if unavailable or server-side. */
 export function getTimezone(): string | undefined {
-    if ( typeof Intl === 'undefined' ) {
+    // Only read timezone in a browser context — Intl is available in Node.js
+    // but returns the server's timezone, not the user's.
+    if ( typeof window === 'undefined' || typeof Intl === 'undefined' ) {
         return undefined;
     }
     try {

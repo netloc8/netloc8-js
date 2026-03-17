@@ -126,6 +126,11 @@ function sendBeacon(endpoint: string): void {
  * Returns a teardown function to remove listeners.
  */
 export function initRum(config?: RumConfig): () => void {
+    // Guard: RUM only runs in a browser with window, document, and sendBeacon
+    if ( typeof window === 'undefined' || typeof document === 'undefined' || typeof navigator?.sendBeacon !== 'function' ) {
+        return () => {};
+    }
+
     const endpoint = config?.endpoint ?? DEFAULT_ENDPOINT;
 
     // Clear any leftover state from a previous mount (e.g. React strict mode)
