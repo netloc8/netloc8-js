@@ -306,7 +306,7 @@ export function createProxy(options?: CreateProxyOptions):
         const apiKey = options?.apiKey ?? process.env.NETLOC8_API_KEY;
         const apiUrl = options?.apiUrl ?? process.env.NETLOC8_API_URL;
         const timeout = options?.timeout ?? 1500;
-        const clientId = typeof __PKG_NAME__ !== 'undefined'
+        const clientId = typeof __PKG_NAME__ !== 'undefined' && typeof __PKG_VERSION__ !== 'undefined'
             ? `${__PKG_NAME__}/${__PKG_VERSION__}`
             : undefined;
 
