@@ -36,6 +36,13 @@ interface RumBeacon {
 const collectedErrors: ClientError[] = [];
 const collectedMetrics: RumMetrics = {};
 
+/** Reset state for each init — prevents leaks on React strict mode double-mount. */
+function resetState(): void {
+    collectedErrors.length = 0;
+    for (const key of Object.keys(collectedMetrics) as (keyof RumMetrics)[]) {
+        delete collectedMetrics[key];
+    }
+}
 
 
 function truncate(str: string, max: number): string {
@@ -120,6 +127,9 @@ function sendBeacon(endpoint: string): void {
  */
 export function initRum(config?: RumConfig): () => void {
     const endpoint = config?.endpoint ?? DEFAULT_ENDPOINT;
+
+    // Clear any leftover state from a previous mount (e.g. React strict mode)
+    resetState();
 
     // Collect Navigation Timing
     collectNavigationTiming();
