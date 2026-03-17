@@ -1,6 +1,31 @@
 {
     "name": "@netloc8/nextjs",
     "version": "1.0.0",
+    "description": "Next.js geolocation plugin. Server-side proxy, getGeo() for Server Components, useGeo() hook, GeoGate, and locale-based redirects.",
+    "keywords": [
+        "nextjs",
+        "next",
+        "geolocation",
+        "ip-geolocation",
+        "geoip",
+        "server-components",
+        "app-router",
+        "middleware",
+        "proxy",
+        "ssr",
+        "timezone",
+        "eu-detection",
+        "gdpr",
+        "locale-redirect",
+        "cookie-consent",
+        "netloc8"
+    ],
+    "homepage": "https://netloc8.com",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/netloc8/netloc8-js",
+        "directory": "packages/nextjs"
+    },
     "type": "module",
     "license": "Elastic-2.0",
     "exports": {
@@ -37,5 +62,8 @@
     "dependencies": {
         "@netloc8/core": "workspace:*",
         "@netloc8/react": "workspace:*"
+    },
+    "engines": {
+        "node": ">=18"
     }
 }
