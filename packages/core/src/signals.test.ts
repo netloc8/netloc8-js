@@ -1,14 +1,28 @@
 import { describe, expect, test } from "bun:test";
 import { getConnectionType, getDeviceType, getLanguage, getTimezone } from "./signals";
 
+/**
+ * Safely restore a globalThis property to its original value.
+ * Handles the case where the property was originally undefined (deletes it).
+ */
+function restoreGlobal(key: string, original: unknown): void {
+    if (original !== undefined) {
+        (globalThis as any)[key] = original;
+    } else {
+        // @ts-expect-error — restore undefined global
+        delete (globalThis as any)[key];
+    }
+}
+
 describe("getTimezone", () => {
     test("returns undefined when window is not defined (server)", () => {
         const original = globalThis.window;
         // @ts-expect-error — ensure window is undefined
         delete (globalThis as any).window;
-        expect(getTimezone()).toBeUndefined();
-        if (original !== undefined) {
-            (globalThis as any).window = original;
+        try {
+            expect(getTimezone()).toBeUndefined();
+        } finally {
+            restoreGlobal("window", original);
         }
     });
 
@@ -16,14 +30,12 @@ describe("getTimezone", () => {
         const original = globalThis.window;
         // @ts-expect-error — minimal mock
         (globalThis as any).window = {};
-        const tz = getTimezone();
-        // Intl is available in Bun, so this should return a timezone
-        expect(typeof tz).toBe("string");
-        if (original !== undefined) {
-            (globalThis as any).window = original;
-        } else {
-            // @ts-expect-error — restore
-            delete (globalThis as any).window;
+        try {
+            const tz = getTimezone();
+            // Intl is available in Bun, so this should return a timezone
+            expect(typeof tz).toBe("string");
+        } finally {
+            restoreGlobal("window", original);
         }
     });
 });
@@ -33,9 +45,10 @@ describe("getLanguage", () => {
         const original = globalThis.navigator;
         // @ts-expect-error — remove navigator
         delete (globalThis as any).navigator;
-        expect(getLanguage()).toBeUndefined();
-        if (original !== undefined) {
-            (globalThis as any).navigator = original;
+        try {
+            expect(getLanguage()).toBeUndefined();
+        } finally {
+            restoreGlobal("navigator", original);
         }
     });
 
@@ -46,12 +59,10 @@ describe("getLanguage", () => {
             languages: ["en-US"],
             userAgent: "Mozilla/5.0",
         };
-        expect(getLanguage()).toBe("en-US");
-        if (original !== undefined) {
-            (globalThis as any).navigator = original;
-        } else {
-            // @ts-expect-error — restore
-            delete (globalThis as any).navigator;
+        try {
+            expect(getLanguage()).toBe("en-US");
+        } finally {
+            restoreGlobal("navigator", original);
         }
     });
 });
@@ -61,9 +72,10 @@ describe("getConnectionType", () => {
         const original = globalThis.navigator;
         // @ts-expect-error — remove navigator
         delete (globalThis as any).navigator;
-        expect(getConnectionType()).toBeUndefined();
-        if (original !== undefined) {
-            (globalThis as any).navigator = original;
+        try {
+            expect(getConnectionType()).toBeUndefined();
+        } finally {
+            restoreGlobal("navigator", original);
         }
     });
 
@@ -78,12 +90,10 @@ describe("getConnectionType", () => {
                 effectiveType: "4g",
             },
         };
-        expect(getConnectionType()).toBe("4g");
-        if (original !== undefined) {
-            (globalThis as any).navigator = original;
-        } else {
-            // @ts-expect-error — restore
-            delete (globalThis as any).navigator;
+        try {
+            expect(getConnectionType()).toBe("4g");
+        } finally {
+            restoreGlobal("navigator", original);
         }
     });
 });
@@ -93,9 +103,10 @@ describe("getDeviceType", () => {
         const original = globalThis.navigator;
         // @ts-expect-error — remove navigator
         delete (globalThis as any).navigator;
-        expect(getDeviceType()).toBe("desktop");
-        if (original !== undefined) {
-            (globalThis as any).navigator = original;
+        try {
+            expect(getDeviceType()).toBe("desktop");
+        } finally {
+            restoreGlobal("navigator", original);
         }
     });
 
@@ -104,12 +115,10 @@ describe("getDeviceType", () => {
         (globalThis as any).navigator = {
             userAgent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
         };
-        expect(getDeviceType()).toBe("desktop");
-        if (original !== undefined) {
-            (globalThis as any).navigator = original;
-        } else {
-            // @ts-expect-error — restore
-            delete (globalThis as any).navigator;
+        try {
+            expect(getDeviceType()).toBe("desktop");
+        } finally {
+            restoreGlobal("navigator", original);
         }
     });
 
@@ -118,12 +127,10 @@ describe("getDeviceType", () => {
         (globalThis as any).navigator = {
             userAgent: "Mozilla/5.0 (iPhone; CPU iPhone OS 16_5 like Mac OS X) AppleWebKit/605.1.15",
         };
-        expect(getDeviceType()).toBe("mobile");
-        if (original !== undefined) {
-            (globalThis as any).navigator = original;
-        } else {
-            // @ts-expect-error — restore
-            delete (globalThis as any).navigator;
+        try {
+            expect(getDeviceType()).toBe("mobile");
+        } finally {
+            restoreGlobal("navigator", original);
         }
     });
 
@@ -132,12 +139,10 @@ describe("getDeviceType", () => {
         (globalThis as any).navigator = {
             userAgent: "Mozilla/5.0 (iPad; CPU OS 16_5 like Mac OS X) AppleWebKit/605.1.15",
         };
-        expect(getDeviceType()).toBe("tablet");
-        if (original !== undefined) {
-            (globalThis as any).navigator = original;
-        } else {
-            // @ts-expect-error — restore
-            delete (globalThis as any).navigator;
+        try {
+            expect(getDeviceType()).toBe("tablet");
+        } finally {
+            restoreGlobal("navigator", original);
         }
     });
 });
