@@ -1,5 +1,5 @@
-import { describe, test, expect } from "bun:test";
-import { getTimezone, getLanguage, getConnectionType, getDeviceType } from "./signals";
+import { describe, expect, test } from "bun:test";
+import { getConnectionType, getDeviceType, getLanguage, getTimezone } from "./signals";
 
 describe("getTimezone", () => {
     test("returns undefined when window is not defined (server)", () => {

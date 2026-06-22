@@ -82,24 +82,24 @@ describe("isPublicIp", () => {
         expect(isPublicIp("2001:4860:4860::8888")).toBe(true);
     });
 
-    test('returns false for 0.0.0.0', () => {
-        expect(isPublicIp('0.0.0.0')).toBe(false);
+    test("returns false for 0.0.0.0", () => {
+        expect(isPublicIp("0.0.0.0")).toBe(false);
     });
 
-    test('returns false for IPv6 unspecified (::)', () => {
-        expect(isPublicIp('::')).toBe(false);
+    test("returns false for IPv6 unspecified (::)", () => {
+        expect(isPublicIp("::")).toBe(false);
     });
 
-    test('returns false for invalid IPv4 (wrong octet count)', () => {
-        expect(isPublicIp('1.2.3')).toBe(false);
+    test("returns false for invalid IPv4 (wrong octet count)", () => {
+        expect(isPublicIp("1.2.3")).toBe(false);
     });
 
-    test('returns false for invalid IPv4 (octet > 255)', () => {
-        expect(isPublicIp('256.1.1.1')).toBe(false);
+    test("returns false for invalid IPv4 (octet > 255)", () => {
+        expect(isPublicIp("256.1.1.1")).toBe(false);
     });
 
-    test('returns false for empty string', () => {
-        expect(isPublicIp('')).toBe(false);
+    test("returns false for empty string", () => {
+        expect(isPublicIp("")).toBe(false);
     });
 });
 
@@ -138,17 +138,17 @@ describe("getClientIp", () => {
         expect(getClientIp(headers)).toBeUndefined();
     });
 
-    test('falls back to private IP from single-IP headers when no public IP found', () => {
+    test("falls back to private IP from single-IP headers when no public IP found", () => {
         const headers = new Headers({
-            'x-real-ip': '192.168.1.1',
+            "x-real-ip": "192.168.1.1",
         });
-        expect(getClientIp(headers)).toBe('192.168.1.1');
+        expect(getClientIp(headers)).toBe("192.168.1.1");
     });
 
-    test('normalizes IPv6 from xff header', () => {
+    test("normalizes IPv6 from xff header", () => {
         const headers = new Headers({
-            'x-forwarded-for': '::ffff:8.8.8.8',
+            "x-forwarded-for": "::ffff:8.8.8.8",
         });
-        expect(getClientIp(headers)).toBe('8.8.8.8');
+        expect(getClientIp(headers)).toBe("8.8.8.8");
     });
 });

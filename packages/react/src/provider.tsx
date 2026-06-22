@@ -1,6 +1,6 @@
 "use client";
 
-import type { Geo, RumConfig } from "@netloc8/core";
+import type { Geo } from "@netloc8/core";
 import {
     COOKIE_NAME,
     COOKIE_OPTIONS,
@@ -200,6 +200,7 @@ export function NetLoc8Provider({
 
             // Write to cookie using shared options
             try {
+                // biome-ignore lint/suspicious/noDocumentCookie: cookie manipulation is intentional for persistence
                 document.cookie = `${COOKIE_NAME}=${serializeCookie(updated)}; path=${COOKIE_OPTIONS.path}; max-age=${COOKIE_OPTIONS.maxAge}; SameSite=${COOKIE_OPTIONS.sameSite}${COOKIE_OPTIONS.secure ? "; Secure" : ""}`;
             } catch {
                 // Cookie write failed — SSR or cookie disabled
@@ -221,6 +222,7 @@ export function NetLoc8Provider({
         }
 
         try {
+            // biome-ignore lint/suspicious/noDocumentCookie: cookie manipulation is intentional for persistence
             document.cookie = `${COOKIE_NAME}=${serializeCookie(geo)}; path=/; max-age=2592000; SameSite=Lax${location.protocol === "https:" ? "; Secure" : ""}`;
         } catch {
             // Cookie write failed

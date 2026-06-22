@@ -1,4 +1,4 @@
-import { describe, test, expect } from "bun:test";
+import { describe, expect, test } from "bun:test";
 import { isEU } from "./helpers";
 import type { Geo } from "./types";
 

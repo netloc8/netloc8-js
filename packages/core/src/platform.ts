@@ -53,7 +53,7 @@ export function getGeoFromPlatformHeaders(headers: Headers): Partial<Geo> {
     const vercelLat = headers.get("x-vercel-ip-latitude");
     if (vercelLat) {
         const lat = parseFloat(vercelLat);
-        if (isFinite(lat)) {
+        if (Number.isFinite(lat)) {
             if (!geo.location) geo.location = {};
             if (!geo.location.coordinates) geo.location.coordinates = {};
             geo.location.coordinates.latitude = lat;
@@ -63,7 +63,7 @@ export function getGeoFromPlatformHeaders(headers: Headers): Partial<Geo> {
     const vercelLng = headers.get("x-vercel-ip-longitude");
     if (vercelLng) {
         const lng = parseFloat(vercelLng);
-        if (isFinite(lng)) {
+        if (Number.isFinite(lng)) {
             if (!geo.location) geo.location = {};
             if (!geo.location.coordinates) geo.location.coordinates = {};
             geo.location.coordinates.longitude = lng;
