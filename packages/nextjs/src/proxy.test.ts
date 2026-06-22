@@ -226,4 +226,3 @@ describe('withGeoRedirect', () => {
         expect(result).toBeUndefined();
     });
 });
-
