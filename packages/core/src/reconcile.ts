@@ -1,4 +1,4 @@
-import type { Geo } from './types';
+import type { Geo } from "./types";
 
 export interface ReconcileSources {
     cookie?: Partial<Geo>;
@@ -19,10 +19,10 @@ function deepMerge(target: Record<string, unknown>, source: Record<string, unkno
         }
 
         if (
-            typeof value === 'object' &&
+            typeof value === "object" &&
             value !== null &&
             !Array.isArray(value) &&
-            typeof target[key] === 'object' &&
+            typeof target[key] === "object" &&
             target[key] !== null &&
             !Array.isArray(target[key])
         ) {
@@ -71,11 +71,7 @@ export function reconcileGeo(sources: ReconcileSources): Geo {
 
     // If cookie had timezoneFromClient but IP changed,
     // keep the browser timezone but mark it as stale
-    if (
-        cookie?.location?.timezoneFromClient === true &&
-        cookie?.query?.value !== ip &&
-        cookie?.location?.timezone
-    ) {
+    if (cookie?.location?.timezoneFromClient === true && cookie?.query?.value !== ip && cookie?.location?.timezone) {
         if (!geo.location) geo.location = {};
         geo.location.timezone = cookie.location.timezone;
         geo.location.timezoneFromClient = false;

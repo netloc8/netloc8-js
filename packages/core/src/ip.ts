@@ -9,12 +9,12 @@ export function normalizeIp(ip: string | undefined): string | undefined {
     let normalized = ip.trim();
 
     // Strip brackets (IPv6 in URLs)
-    if (normalized.startsWith('[') && normalized.endsWith(']')) {
+    if (normalized.startsWith("[") && normalized.endsWith("]")) {
         normalized = normalized.slice(1, -1);
     }
 
     // Strip IPv4-mapped IPv6 prefix
-    if (normalized.toLowerCase().startsWith('::ffff:')) {
+    if (normalized.toLowerCase().startsWith("::ffff:")) {
         normalized = normalized.slice(7);
     }
 
@@ -32,14 +32,14 @@ export function isPublicIp(ip: string): boolean {
     }
 
     // IPv4 checks
-    if (!normalized.includes(':')) {
-        const parts = normalized.split('.').map(Number);
+    if (!normalized.includes(":")) {
+        const parts = normalized.split(".").map(Number);
         if (parts.length !== 4) {
             return false;
         }
 
         // Validate each octet is an integer in 0-255
-        if (parts.some(p => !Number.isInteger(p) || p < 0 || p > 255)) {
+        if (parts.some((p) => !Number.isInteger(p) || p < 0 || p > 255)) {
             return false;
         }
 
@@ -74,7 +74,7 @@ export function isPublicIp(ip: string): boolean {
         }
 
         // 0.0.0.0
-        if (parts.every(p => p === 0)) {
+        if (parts.every((p) => p === 0)) {
             return false;
         }
 
@@ -83,22 +83,22 @@ export function isPublicIp(ip: string): boolean {
 
     // IPv6 checks
     // Loopback: ::1
-    if (normalized === '::1') {
+    if (normalized === "::1") {
         return false;
     }
 
     // ULA: fc00::/7
-    if (normalized.startsWith('fc') || normalized.startsWith('fd')) {
+    if (normalized.startsWith("fc") || normalized.startsWith("fd")) {
         return false;
     }
 
     // Link-local: fe80::/10
-    if (normalized.startsWith('fe80')) {
+    if (normalized.startsWith("fe80")) {
         return false;
     }
 
     // Unspecified: ::
-    if (normalized === '::') {
+    if (normalized === "::") {
         return false;
     }
 
@@ -111,10 +111,13 @@ export function isPublicIp(ip: string): boolean {
  */
 export function getClientIp(headers: Headers): string | undefined {
     // 1. x-forwarded-for — split by comma, return first public IP
-    const xff = headers.get('x-forwarded-for');
+    const xff = headers.get("x-forwarded-for");
     if (xff) {
-        const ips = xff.split(',').map(s => normalizeIp(s.trim())).filter(Boolean) as string[];
-        const publicIp = ips.find(ip => isPublicIp(ip));
+        const ips = xff
+            .split(",")
+            .map((s) => normalizeIp(s.trim()))
+            .filter(Boolean) as string[];
+        const publicIp = ips.find((ip) => isPublicIp(ip));
         if (publicIp) {
             return publicIp;
         }
@@ -122,12 +125,12 @@ export function getClientIp(headers: Headers): string | undefined {
 
     // 2. Single-IP headers in priority order
     const singleHeaders = [
-        'cf-connecting-ip',
-        'true-client-ip',
-        'x-real-ip',
-        'x-client-ip',
-        'fastly-client-ip',
-        'fly-client-ip',
+        "cf-connecting-ip",
+        "true-client-ip",
+        "x-real-ip",
+        "x-client-ip",
+        "fastly-client-ip",
+        "fly-client-ip",
     ];
 
     for (const header of singleHeaders) {
@@ -142,7 +145,10 @@ export function getClientIp(headers: Headers): string | undefined {
 
     // 3. Last resort: return first candidate from xff even if private
     if (xff) {
-        const ips = xff.split(',').map(s => normalizeIp(s.trim())).filter(Boolean) as string[];
+        const ips = xff
+            .split(",")
+            .map((s) => normalizeIp(s.trim()))
+            .filter(Boolean) as string[];
         if (ips.length > 0) {
             return ips[0];
         }

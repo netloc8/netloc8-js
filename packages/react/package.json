@@ -1,6 +1,6 @@
 {
     "name": "@netloc8/react",
-    "version": "1.1.0",
+    "version": "1.2.0",
     "description": "React geolocation components. Provider, useGeo() hook, and GeoGate for conditional rendering by country, region, city, and EU membership.",
     "keywords": [
         "react",
@@ -27,6 +27,7 @@
         "directory": "packages/react"
     },
     "type": "module",
+    "sideEffects": false,
     "license": "Elastic-2.0",
     "exports": {
         ".": {

@@ -200,6 +200,7 @@ Beaconed via `navigator.sendBeacon()` on `visibilitychange` — zero latency imp
 | `fetchTimezone` | Timezone-only lookup by IP |
 | `fetchMyGeo` | Full geo lookup for the caller's own IP (browser) |
 | `fetchMyTimezone` | Timezone-only lookup for the caller's own IP (browser) |
+| `fetchValidation` | Check whether a string is a valid IP address (via API) |
 | `getClientIp` | Extract client IP from request headers |
 | `isPublicIp` | Check whether an IP is publicly routable |
 | `getGeoFromPlatformHeaders` | Parse Vercel / Cloudflare / CloudFront geo headers |

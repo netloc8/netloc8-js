@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { createContext, type Context } from 'react';
-import type { Geo } from '@netloc8/core';
+import type { Geo } from "@netloc8/core";
+import { type Context, createContext } from "react";
 
 /**
  * Shape of the GeoContext value — follows the industry-standard
@@ -20,6 +20,4 @@ export interface GeoContextValue {
  * Internal sentinel — `null` means no provider is present.
  * The public default is cast so consumers see the correct type.
  */
-export const GeoContext: Context<GeoContextValue> = createContext<GeoContextValue>(
-    null as unknown as GeoContextValue,
-);
+export const GeoContext: Context<GeoContextValue> = createContext<GeoContextValue>(null as unknown as GeoContextValue);

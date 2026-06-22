@@ -4,6 +4,19 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.2.0] — 2026-06-22
+
+### Added
+- **`fetchValidation`** — new `fetchValidation(ipAddress, options)` function in `@netloc8/core` wrapping `GET /v1/ip/{ipAddress}/validation`; returns `true`/`false` for valid/invalid IPs, or `null` on error/timeout — completes parity with the Go SDK's `Validate()` method
+- **Unit test coverage** — added tests for `helpers`, `signals`, RUM telemetry, proxy redirects, and edge cases
+- **CONTRIBUTING.md** — added contributor guidelines
+
+### Changed
+- **Biome formatter** — adopted Biome for consistent code formatting across the monorepo; replaced stale ESLint comments with `biome-ignore`
+- **Tree-shaking** — all packages marked `"sideEffects": false` for better bundler dead-code elimination
+- **Cookie writes** — use `COOKIE_OPTIONS` consistently for all cookie writes (bug fix)
+- **RUM state scoping** — scoped RUM collector state to `initRum` closure instead of module-level; hardened test global mocks
+
 ## [1.1.0] — 2026-03-17
 
 ### Added

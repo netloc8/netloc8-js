@@ -1,4 +1,13 @@
-import type { Geo, GeoContinent, GeoCountry, GeoRegion, GeoCoordinates, GeoNetwork, GeoSources, GeoMeta } from './types';
+import type {
+    Geo,
+    GeoContinent,
+    GeoCoordinates,
+    GeoCountry,
+    GeoMeta,
+    GeoNetwork,
+    GeoRegion,
+    GeoSources,
+} from "./types";
 
 /**
  * Normalize a NetLoc8 API response into the SDK's Geo type.
@@ -7,10 +16,7 @@ import type { Geo, GeoContinent, GeoCountry, GeoRegion, GeoCoordinates, GeoNetwo
  * sources, and meta fields. This function validates and copies those
  * fields into a typed Geo object.
  */
-export function normalizeApiResponse(
-    raw: Record<string, unknown>,
-    ip?: string
-): Geo {
+export function normalizeApiResponse(raw: Record<string, unknown>, ip?: string): Geo {
     const rawQuery = raw.query as Record<string, unknown> | undefined;
     const rawLocation = raw.location as Record<string, unknown> | undefined;
     const rawNetwork = raw.network as Record<string, unknown> | undefined;
@@ -25,7 +31,7 @@ export function normalizeApiResponse(
         },
     };
 
-    if ( rawLocation ) {
+    if (rawLocation) {
         geo.location = {
             continent: rawLocation.continent as GeoContinent | undefined,
             country: rawLocation.country as GeoCountry | undefined,
@@ -41,15 +47,15 @@ export function normalizeApiResponse(
         };
     }
 
-    if ( rawNetwork ) {
+    if (rawNetwork) {
         geo.network = rawNetwork as GeoNetwork;
     }
 
-    if ( rawSources ) {
+    if (rawSources) {
         geo.sources = rawSources as GeoSources;
     }
 
-    if ( rawMeta ) {
+    if (rawMeta) {
         geo.meta = rawMeta as GeoMeta;
     }
 

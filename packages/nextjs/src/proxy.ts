@@ -1,31 +1,28 @@
 declare const __PKG_NAME__: string;
 declare const __PKG_VERSION__: string;
 
-import type { Geo } from '@netloc8/core';
-import type { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
+import type { Geo } from "@netloc8/core";
 import {
-    getClientIp,
-    isPublicIp,
-    getGeoFromPlatformHeaders,
-    fetchGeo,
-    normalizeApiResponse,
-    parseCookie,
-    serializeCookie,
-    reconcileGeo,
     COOKIE_NAME,
     COOKIE_OPTIONS,
-} from '@netloc8/core';
+    fetchGeo,
+    getClientIp,
+    getGeoFromPlatformHeaders,
+    isPublicIp,
+    normalizeApiResponse,
+    parseCookie,
+    reconcileGeo,
+    serializeCookie,
+} from "@netloc8/core";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 interface CreateProxyOptions {
     timeout?: number;
     apiKey?: string;
     apiUrl?: string;
     testIp?: string;
-    handler?: (
-        request: NextRequest,
-        geo: Geo
-    ) => NextResponse | undefined | Promise<NextResponse | undefined>;
+    handler?: (request: NextRequest, geo: Geo) => NextResponse | undefined | Promise<NextResponse | undefined>;
 }
 
 interface GeoRedirectOptions {
@@ -42,74 +39,82 @@ interface HeaderEntry {
     header: string;
     get: (geo: Geo) => string | number | boolean | string[] | undefined;
     set: (geo: Geo, raw: string) => void;
-    type: 'string' | 'number' | 'boolean' | 'json';
+    type: "string" | "number" | "boolean" | "json";
 }
 
 const HEADER_ENTRIES: HeaderEntry[] = [
     {
-        header: 'x-netloc8-ip',
+        header: "x-netloc8-ip",
         get: (g) => g.query?.value,
-        set: (g, v) => { if (!g.query) g.query = {}; g.query.value = v; },
-        type: 'string',
+        set: (g, v) => {
+            if (!g.query) g.query = {};
+            g.query.value = v;
+        },
+        type: "string",
     },
     {
-        header: 'x-netloc8-ip-version',
+        header: "x-netloc8-ip-version",
         get: (g) => g.query?.ipVersion,
-        set: (g, v) => { const n = parseFloat(v); if (!Number.isFinite(n)) return; if (!g.query) g.query = {}; g.query.ipVersion = n; },
-        type: 'number',
+        set: (g, v) => {
+            const n = parseFloat(v);
+            if (!Number.isFinite(n)) return;
+            if (!g.query) g.query = {};
+            g.query.ipVersion = n;
+        },
+        type: "number",
     },
     {
-        header: 'x-netloc8-continent-code',
+        header: "x-netloc8-continent-code",
         get: (g) => g.location?.continent?.code,
         set: (g, v) => {
             if (!g.location) g.location = {};
             if (!g.location.continent) g.location.continent = {};
             g.location.continent.code = v;
         },
-        type: 'string',
+        type: "string",
     },
     {
-        header: 'x-netloc8-continent-name',
+        header: "x-netloc8-continent-name",
         get: (g) => g.location?.continent?.name,
         set: (g, v) => {
             if (!g.location) g.location = {};
             if (!g.location.continent) g.location.continent = {};
             g.location.continent.name = v;
         },
-        type: 'string',
+        type: "string",
     },
     {
-        header: 'x-netloc8-country-code',
+        header: "x-netloc8-country-code",
         get: (g) => g.location?.country?.code,
         set: (g, v) => {
             if (!g.location) g.location = {};
             if (!g.location.country) g.location.country = {};
             g.location.country.code = v;
         },
-        type: 'string',
+        type: "string",
     },
     {
-        header: 'x-netloc8-country-name',
+        header: "x-netloc8-country-name",
         get: (g) => g.location?.country?.name,
         set: (g, v) => {
             if (!g.location) g.location = {};
             if (!g.location.country) g.location.country = {};
             g.location.country.name = v;
         },
-        type: 'string',
+        type: "string",
     },
     {
-        header: 'x-netloc8-country-flag',
+        header: "x-netloc8-country-flag",
         get: (g) => g.location?.country?.flag,
         set: (g, v) => {
             if (!g.location) g.location = {};
             if (!g.location.country) g.location.country = {};
             g.location.country.flag = v;
         },
-        type: 'string',
+        type: "string",
     },
     {
-        header: 'x-netloc8-country-unions',
+        header: "x-netloc8-country-unions",
         get: (g) => g.location?.country?.unions,
         set: (g, v) => {
             if (!g.location) g.location = {};
@@ -123,132 +128,173 @@ const HEADER_ENTRIES: HeaderEntry[] = [
                 // Skip malformed JSON
             }
         },
-        type: 'json',
+        type: "json",
     },
     {
-        header: 'x-netloc8-region-code',
+        header: "x-netloc8-region-code",
         get: (g) => g.location?.region?.code,
         set: (g, v) => {
             if (!g.location) g.location = {};
             if (!g.location.region) g.location.region = {};
             g.location.region.code = v;
         },
-        type: 'string',
+        type: "string",
     },
     {
-        header: 'x-netloc8-region-name',
+        header: "x-netloc8-region-name",
         get: (g) => g.location?.region?.name,
         set: (g, v) => {
             if (!g.location) g.location = {};
             if (!g.location.region) g.location.region = {};
             g.location.region.name = v;
         },
-        type: 'string',
+        type: "string",
     },
     {
-        header: 'x-netloc8-district',
+        header: "x-netloc8-district",
         get: (g) => g.location?.district,
-        set: (g, v) => { if (!g.location) g.location = {}; g.location.district = v; },
-        type: 'string',
+        set: (g, v) => {
+            if (!g.location) g.location = {};
+            g.location.district = v;
+        },
+        type: "string",
     },
     {
-        header: 'x-netloc8-city',
+        header: "x-netloc8-city",
         get: (g) => g.location?.city,
-        set: (g, v) => { if (!g.location) g.location = {}; g.location.city = v; },
-        type: 'string',
+        set: (g, v) => {
+            if (!g.location) g.location = {};
+            g.location.city = v;
+        },
+        type: "string",
     },
     {
-        header: 'x-netloc8-postal-code',
+        header: "x-netloc8-postal-code",
         get: (g) => g.location?.postalCode,
-        set: (g, v) => { if (!g.location) g.location = {}; g.location.postalCode = v; },
-        type: 'string',
+        set: (g, v) => {
+            if (!g.location) g.location = {};
+            g.location.postalCode = v;
+        },
+        type: "string",
     },
     {
-        header: 'x-netloc8-latitude',
+        header: "x-netloc8-latitude",
         get: (g) => g.location?.coordinates?.latitude,
         set: (g, v) => {
             if (!g.location) g.location = {};
             if (!g.location.coordinates) g.location.coordinates = {};
-            const n = parseFloat(v); if (!Number.isFinite(n)) return;
+            const n = parseFloat(v);
+            if (!Number.isFinite(n)) return;
             g.location.coordinates.latitude = n;
         },
-        type: 'number',
+        type: "number",
     },
     {
-        header: 'x-netloc8-longitude',
+        header: "x-netloc8-longitude",
         get: (g) => g.location?.coordinates?.longitude,
         set: (g, v) => {
             if (!g.location) g.location = {};
             if (!g.location.coordinates) g.location.coordinates = {};
-            const n = parseFloat(v); if (!Number.isFinite(n)) return;
+            const n = parseFloat(v);
+            if (!Number.isFinite(n)) return;
             g.location.coordinates.longitude = n;
         },
-        type: 'number',
+        type: "number",
     },
     {
-        header: 'x-netloc8-accuracy-radius',
+        header: "x-netloc8-accuracy-radius",
         get: (g) => g.location?.coordinates?.accuracyRadius,
         set: (g, v) => {
             if (!g.location) g.location = {};
             if (!g.location.coordinates) g.location.coordinates = {};
-            const n = parseFloat(v); if (!Number.isFinite(n)) return;
+            const n = parseFloat(v);
+            if (!Number.isFinite(n)) return;
             g.location.coordinates.accuracyRadius = n;
         },
-        type: 'number',
+        type: "number",
     },
     {
-        header: 'x-netloc8-timezone',
+        header: "x-netloc8-timezone",
         get: (g) => g.location?.timezone,
-        set: (g, v) => { if (!g.location) g.location = {}; g.location.timezone = v; },
-        type: 'string',
+        set: (g, v) => {
+            if (!g.location) g.location = {};
+            g.location.timezone = v;
+        },
+        type: "string",
     },
     {
-        header: 'x-netloc8-utc-offset',
+        header: "x-netloc8-utc-offset",
         get: (g) => g.location?.utcOffset,
-        set: (g, v) => { if (!g.location) g.location = {}; g.location.utcOffset = v; },
-        type: 'string',
+        set: (g, v) => {
+            if (!g.location) g.location = {};
+            g.location.utcOffset = v;
+        },
+        type: "string",
     },
     {
-        header: 'x-netloc8-geo-confidence',
+        header: "x-netloc8-geo-confidence",
         get: (g) => g.location?.geoConfidence,
-        set: (g, v) => { const n = parseFloat(v); if (!Number.isFinite(n)) return; if (!g.location) g.location = {}; g.location.geoConfidence = n; },
-        type: 'number',
+        set: (g, v) => {
+            const n = parseFloat(v);
+            if (!Number.isFinite(n)) return;
+            if (!g.location) g.location = {};
+            g.location.geoConfidence = n;
+        },
+        type: "number",
     },
     {
-        header: 'x-netloc8-asn',
+        header: "x-netloc8-asn",
         get: (g) => g.network?.asn,
-        set: (g, v) => { if (!g.network) g.network = {}; g.network.asn = v; },
-        type: 'string',
+        set: (g, v) => {
+            if (!g.network) g.network = {};
+            g.network.asn = v;
+        },
+        type: "string",
     },
     {
-        header: 'x-netloc8-asn-org',
+        header: "x-netloc8-asn-org",
         get: (g) => g.network?.organization,
-        set: (g, v) => { if (!g.network) g.network = {}; g.network.organization = v; },
-        type: 'string',
+        set: (g, v) => {
+            if (!g.network) g.network = {};
+            g.network.organization = v;
+        },
+        type: "string",
     },
     {
-        header: 'x-netloc8-asn-domain',
+        header: "x-netloc8-asn-domain",
         get: (g) => g.network?.domain,
-        set: (g, v) => { if (!g.network) g.network = {}; g.network.domain = v; },
-        type: 'string',
+        set: (g, v) => {
+            if (!g.network) g.network = {};
+            g.network.domain = v;
+        },
+        type: "string",
     },
     {
-        header: 'x-netloc8-precision',
+        header: "x-netloc8-precision",
         get: (g) => g.meta?.precision,
-        set: (g, v) => { if (!g.meta) g.meta = {}; g.meta.precision = v; },
-        type: 'string',
+        set: (g, v) => {
+            if (!g.meta) g.meta = {};
+            g.meta.precision = v;
+        },
+        type: "string",
     },
     {
-        header: 'x-netloc8-degraded',
+        header: "x-netloc8-degraded",
         get: (g) => g.meta?.degraded,
-        set: (g, v) => { if (!g.meta) g.meta = {}; g.meta.degraded = v === 'true'; },
-        type: 'boolean',
+        set: (g, v) => {
+            if (!g.meta) g.meta = {};
+            g.meta.degraded = v === "true";
+        },
+        type: "boolean",
     },
     {
-        header: 'x-netloc8-timezone-from-client',
+        header: "x-netloc8-timezone-from-client",
         get: (g) => g.location?.timezoneFromClient,
-        set: (g, v) => { if (!g.location) g.location = {}; g.location.timezoneFromClient = v === 'true'; },
-        type: 'boolean',
+        set: (g, v) => {
+            if (!g.location) g.location = {};
+            g.location.timezoneFromClient = v === "true";
+        },
+        type: "boolean",
     },
 ];
 
@@ -259,7 +305,7 @@ function setGeoHeaders(requestHeaders: Headers, geo: Geo): void {
     for (const entry of HEADER_ENTRIES) {
         const value = entry.get(geo);
         if (value !== undefined && value !== null) {
-            if (entry.type === 'json') {
+            if (entry.type === "json") {
                 requestHeaders.set(entry.header, encodeURIComponent(JSON.stringify(value)));
             } else {
                 requestHeaders.set(entry.header, encodeURIComponent(String(value)));
@@ -299,16 +345,15 @@ export function readGeoHeaders(headers: Headers): Geo {
  * Returns a standard proxy function that can be exported directly from the
  * user's proxy.ts / proxy.js file, or composed with other proxy logic.
  */
-export function createProxy(options?: CreateProxyOptions):
-    (request: NextRequest) => Promise<NextResponse> {
-
+export function createProxy(options?: CreateProxyOptions): (request: NextRequest) => Promise<NextResponse> {
     return async (request: NextRequest): Promise<NextResponse> => {
         const apiKey = options?.apiKey ?? process.env.NETLOC8_API_KEY;
         const apiUrl = options?.apiUrl ?? process.env.NETLOC8_API_URL;
         const timeout = options?.timeout ?? 1500;
-        const clientId = typeof __PKG_NAME__ !== 'undefined' && typeof __PKG_VERSION__ !== 'undefined'
-            ? `${__PKG_NAME__}/${__PKG_VERSION__}`
-            : undefined;
+        const clientId =
+            typeof __PKG_NAME__ !== "undefined" && typeof __PKG_VERSION__ !== "undefined"
+                ? `${__PKG_NAME__}/${__PKG_VERSION__}`
+                : undefined;
 
         // Security: Remove any incoming spoofed headers
         const requestHeaders = new Headers(request.headers);
@@ -319,7 +364,7 @@ export function createProxy(options?: CreateProxyOptions):
         // 1. Determine client IP
         let clientIp: string | undefined;
 
-        if (process.env.NODE_ENV !== 'production') {
+        if (process.env.NODE_ENV !== "production") {
             clientIp = options?.testIp ?? process.env.NETLOC8_TEST_IP;
         }
 
@@ -334,13 +379,13 @@ export function createProxy(options?: CreateProxyOptions):
         // Cookie fast path: only trust timezone/timezoneFromClient from the
         // client-controlled cookie. Re-resolve other geo fields to prevent
         // spoofing of country/region/city via cookie manipulation.
-        const cookieTimezone = (
-            cookieGeo.location?.timezoneFromClient === true &&
-            cookieGeo.query?.value === clientIp
-        ) ? {
-            timezone: cookieGeo.location.timezone,
-            timezoneFromClient: cookieGeo.location.timezoneFromClient,
-        } : undefined;
+        const cookieTimezone =
+            cookieGeo.location?.timezoneFromClient === true && cookieGeo.query?.value === clientIp
+                ? {
+                      timezone: cookieGeo.location.timezone,
+                      timezoneFromClient: cookieGeo.location.timezoneFromClient,
+                  }
+                : undefined;
 
         // 3. Extract platform headers (zero-cost)
         const platformGeo = getGeoFromPlatformHeaders(request.headers);
@@ -354,16 +399,16 @@ export function createProxy(options?: CreateProxyOptions):
         let apiGeo: Geo | undefined;
 
         // Dev-mode warning: only on new visitors to avoid console spam
-        if (process.env.NODE_ENV !== 'production' && !apiKey && ipChanged) {
+        if (process.env.NODE_ENV !== "production" && !apiKey && ipChanged) {
             if (platformGeo.location?.country?.code) {
                 console.warn(
-                    '[netloc8] No API key configured \u2014 using platform headers only (country-level).\n' +
-                    '          Get a free key at https://netloc8.com for city-level geo.'
+                    "[netloc8] No API key configured \u2014 using platform headers only (country-level).\n" +
+                        "          Get a free key at https://netloc8.com for city-level geo.",
                 );
             } else {
                 console.warn(
-                    '[netloc8] No API key configured and no platform geo headers detected.\n' +
-                    '          A free API key enables faster geo responses. Get one at https://netloc8.com'
+                    "[netloc8] No API key configured and no platform geo headers detected.\n" +
+                        "          A free API key enables faster geo responses. Get one at https://netloc8.com",
                 );
             }
         }
@@ -378,7 +423,10 @@ export function createProxy(options?: CreateProxyOptions):
                 // No API key: attempt geo lookup with a short timeout.
                 // Falls back to platform headers if the request doesn't complete.
                 fetchGeo(clientIp, {
-                    apiUrl, timeout: 100, clientId, allowAnonymous: true,
+                    apiUrl,
+                    timeout: 100,
+                    clientId,
+                    allowAnonymous: true,
                 }).catch(() => {});
             }
         }
@@ -408,21 +456,23 @@ export function createProxy(options?: CreateProxyOptions):
         let handlerResponse: NextResponse | undefined;
         if (options?.handler) {
             const sanitizedRequest = new Request(request.nextUrl.toString(), {
-                method: request.method ?? 'GET',
+                method: request.method ?? "GET",
                 headers: requestHeaders,
                 body: request.body,
                 // @ts-expect-error -- NextRequest supports duplex but TS doesn't expose it
-                duplex: 'half',
+                duplex: "half",
             });
             handlerResponse = await options.handler(
                 Object.assign(sanitizedRequest, { nextUrl: request.nextUrl, cookies: request.cookies }) as NextRequest,
-                geo
+                geo,
             );
         }
 
-        const response = handlerResponse ?? NextResponse.next({
-            request: { headers: requestHeaders },
-        });
+        const response =
+            handlerResponse ??
+            NextResponse.next({
+                request: { headers: requestHeaders },
+            });
 
         // 8. Set/update the cookie if needed
         if (!cookieValue || ipChanged) {
@@ -443,7 +493,7 @@ export function createProxy(options?: CreateProxyOptions):
  * Create a geo-redirect handler for use with createProxy.
  */
 export function withGeoRedirect(
-    options: GeoRedirectOptions
+    options: GeoRedirectOptions,
 ): (request: NextRequest, geo: Geo) => NextResponse | undefined {
     const { defaultLocale, localeMap, excludePaths = [] } = options;
     const validLocales = new Set(Object.values(localeMap));
@@ -460,7 +510,7 @@ export function withGeoRedirect(
         }
 
         // Extract current locale prefix from path
-        const segments = pathname.split('/').filter(Boolean);
+        const segments = pathname.split("/").filter(Boolean);
         const currentPrefix = segments[0];
 
         // If path already has a valid locale prefix, don't redirect

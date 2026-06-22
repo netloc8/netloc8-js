@@ -1,6 +1,6 @@
-import type { FetchGeoOptions, ApiErrorResponse } from './types';
-import { CLIENT_ID, DEFAULT_API_URL } from './constants';
-import { getTimezone, getLanguage, getConnectionType } from './signals';
+import { CLIENT_ID, DEFAULT_API_URL } from "./constants";
+import { getConnectionType, getLanguage, getTimezone } from "./signals";
+import type { ApiErrorResponse, FetchGeoOptions } from "./types";
 
 /** Cached RTT from the last API request (measured via Resource Timing). */
 let cachedRttMs: number | undefined;
@@ -14,23 +14,23 @@ function getBrowserHeaders(): Record<string, string> {
     const headers: Record<string, string> = {};
 
     const tz = getTimezone();
-    if ( tz ) {
-        headers['X-NL8-TZ'] = tz;
+    if (tz) {
+        headers["X-NL8-TZ"] = tz;
     }
 
     const lang = getLanguage();
-    if ( lang ) {
-        headers['X-NL8-Lang'] = lang;
+    if (lang) {
+        headers["X-NL8-Lang"] = lang;
     }
 
     const conn = getConnectionType();
-    if ( conn ) {
-        headers['X-NL8-Conn'] = conn;
+    if (conn) {
+        headers["X-NL8-Conn"] = conn;
     }
 
     // Include cached RTT from a previous request
-    if ( cachedRttMs !== undefined ) {
-        headers['X-NL8-RTT'] = String(cachedRttMs);
+    if (cachedRttMs !== undefined) {
+        headers["X-NL8-RTT"] = String(cachedRttMs);
     }
 
     return headers;
@@ -43,17 +43,17 @@ function getBrowserHeaders(): Record<string, string> {
  * until after the response arrives).
  */
 function measureRtt(): void {
-    if ( typeof performance === 'undefined' ) {
+    if (typeof performance === "undefined") {
         return;
     }
 
     try {
-        const entries = performance.getEntriesByType('resource') as PerformanceResourceTiming[];
-        for ( let i = entries.length - 1; i >= 0; i-- ) {
+        const entries = performance.getEntriesByType("resource") as PerformanceResourceTiming[];
+        for (let i = entries.length - 1; i >= 0; i--) {
             const entry = entries[i];
-            if ( entry.name.includes('api.netloc8.com') || entry.name.includes('/v1/ip/') ) {
+            if (entry.name.includes("api.netloc8.com") || entry.name.includes("/v1/ip/")) {
                 const rtt = Math.round(entry.responseStart - entry.requestStart);
-                if ( rtt > 0 && rtt < 30000 ) {
+                if (rtt > 0 && rtt < 30000) {
                     cachedRttMs = rtt;
                 }
                 break;
@@ -71,7 +71,7 @@ function measureRtt(): void {
 async function parseApiError(response: Response): Promise<ApiErrorResponse | null> {
     try {
         const body = await response.json();
-        if ( typeof body === 'object' && body !== null && 'error' in body ) {
+        if (typeof body === "object" && body !== null && "error" in body) {
             return body as ApiErrorResponse;
         }
         return null;
@@ -84,8 +84,10 @@ async function parseApiError(response: Response): Promise<ApiErrorResponse | nul
  * Log a structured API error with its error code and message.
  */
 function logApiError(context: string, apiError: ApiErrorResponse | null, status: number): void {
-    if ( apiError?.error?.code ) {
-        console.warn(`[netloc8] ${context}: ${apiError.error.code} — ${apiError.error.message ?? 'Unknown error'} (HTTP ${status})`);
+    if (apiError?.error?.code) {
+        console.warn(
+            `[netloc8] ${context}: ${apiError.error.code} — ${apiError.error.message ?? "Unknown error"} (HTTP ${status})`,
+        );
     } else {
         console.warn(`[netloc8] ${context}: HTTP ${status}`);
     }
@@ -98,33 +100,29 @@ function logApiError(context: string, apiError: ApiErrorResponse | null, status:
  * Returns the parsed JSON body, or null on error/timeout.
  * Never throws.
  */
-async function fetchApi<T>(
-    url: string,
-    context: string,
-    options?: FetchGeoOptions,
-): Promise<T | null> {
+async function fetchApi<T>(url: string, context: string, options?: FetchGeoOptions): Promise<T | null> {
     const apiKey = options?.apiKey ?? process.env.NETLOC8_API_KEY;
     const timeout = options?.timeout ?? 1500;
     const clientId = options?.clientId ?? CLIENT_ID;
     const allowAnonymous = options?.allowAnonymous === true;
 
     if (!apiKey && !allowAnonymous) {
-        console.warn('[netloc8] No API key provided. Set NETLOC8_API_KEY or pass apiKey in options.');
+        console.warn("[netloc8] No API key provided. Set NETLOC8_API_KEY or pass apiKey in options.");
         return null;
     }
 
     try {
         const headers: Record<string, string> = {
-            'X-NetLoc8-Client': clientId,
-            'Accept': 'application/json',
+            "X-NetLoc8-Client": clientId,
+            Accept: "application/json",
             ...getBrowserHeaders(),
         };
         if (apiKey) {
-            headers['X-API-Key'] = apiKey;
+            headers["X-API-Key"] = apiKey;
         }
 
         const response = await fetch(url, {
-            method: 'GET',
+            method: "GET",
             headers,
             signal: AbortSignal.timeout(timeout),
         });
@@ -137,7 +135,7 @@ async function fetchApi<T>(
             return null;
         }
 
-        return await response.json() as T;
+        return (await response.json()) as T;
     } catch (error) {
         console.warn(`[netloc8] ${context}: ${(error as Error).message}`);
         return null;
@@ -159,10 +157,7 @@ function resolveApiUrl(options?: FetchGeoOptions): string {
  * codes when available.
  * Never throws.
  */
-export async function fetchGeo(
-    ipAddress: string,
-    options?: FetchGeoOptions
-): Promise<Record<string, unknown> | null> {
+export async function fetchGeo(ipAddress: string, options?: FetchGeoOptions): Promise<Record<string, unknown> | null> {
     const url = `${resolveApiUrl(options)}/v1/ip/${encodeURIComponent(ipAddress)}`;
     return fetchApi<Record<string, unknown>>(url, `Geo lookup failed for ${ipAddress}`, options);
 }
@@ -172,10 +167,7 @@ export async function fetchGeo(
  *
  * Returns the IANA timezone string or null.
  */
-export async function fetchTimezone(
-    ipAddress: string,
-    options?: FetchGeoOptions
-): Promise<string | null> {
+export async function fetchTimezone(ipAddress: string, options?: FetchGeoOptions): Promise<string | null> {
     const url = `${resolveApiUrl(options)}/v1/ip/${encodeURIComponent(ipAddress)}/timezone`;
     return fetchApi<string>(url, `Timezone lookup failed for ${ipAddress}`, options);
 }
@@ -190,11 +182,9 @@ export async function fetchTimezone(
  * Returns the raw API JSON or null on error/timeout.
  * Never throws.
  */
-export async function fetchMyGeo(
-    options?: FetchGeoOptions
-): Promise<Record<string, unknown> | null> {
+export async function fetchMyGeo(options?: FetchGeoOptions): Promise<Record<string, unknown> | null> {
     const url = `${resolveApiUrl(options)}/v1/ip/me`;
-    return fetchApi<Record<string, unknown>>(url, 'Self geo lookup failed', options);
+    return fetchApi<Record<string, unknown>>(url, "Self geo lookup failed", options);
 }
 
 /**
@@ -205,9 +195,21 @@ export async function fetchMyGeo(
  *
  * Returns the IANA timezone string or null.
  */
-export async function fetchMyTimezone(
-    options?: FetchGeoOptions
-): Promise<string | null> {
+export async function fetchMyTimezone(options?: FetchGeoOptions): Promise<string | null> {
     const url = `${resolveApiUrl(options)}/v1/ip/me/timezone`;
-    return fetchApi<string>(url, 'Self timezone lookup failed', options);
+    return fetchApi<string>(url, "Self timezone lookup failed", options);
+}
+
+/**
+ * Validate whether a string is a valid IP address via the NetLoc8 API.
+ *
+ * Returns true if the address is a valid IPv4 or IPv6 address, false
+ * otherwise. Returns null on error/timeout.
+ *
+ * For local-only validation without an API call, use the `normalizeIp`
+ * and `isPublicIp` helpers from this package instead.
+ */
+export async function fetchValidation(ipAddress: string, options?: FetchGeoOptions): Promise<boolean | null> {
+    const url = `${resolveApiUrl(options)}/v1/ip/${encodeURIComponent(ipAddress)}/validation`;
+    return fetchApi<boolean>(url, `Validation failed for ${ipAddress}`, options);
 }

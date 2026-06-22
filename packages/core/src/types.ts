@@ -98,7 +98,7 @@ export interface CookieOptions {
     path?: string;
     httpOnly?: boolean;
     secure?: boolean;
-    sameSite?: 'strict' | 'lax' | 'none';
+    sameSite?: "strict" | "lax" | "none";
     maxAge?: number;
 }
 
