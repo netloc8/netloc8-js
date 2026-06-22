@@ -1,7 +1,7 @@
-import type { RumConfig } from '../types';
-import { getConnectionType, getDeviceType } from '../signals';
+import { getConnectionType, getDeviceType } from "../signals";
+import type { RumConfig } from "../types";
 
-const DEFAULT_ENDPOINT = 'https://api.netloc8.com/v1/telemetry/rum';
+const DEFAULT_ENDPOINT = "https://api.netloc8.com/v1/telemetry/rum";
 const MAX_ERRORS = 10;
 const MAX_MESSAGE_LEN = 500;
 const MAX_STACK_LEN = 2000;
@@ -19,7 +19,7 @@ interface RumMetrics {
 }
 
 interface ClientError {
-    type: 'unhandled_exception' | 'resource_load_failure';
+    type: "unhandled_exception" | "resource_load_failure";
     message: string;
     stack?: string;
     resourceUrl?: string;
@@ -27,7 +27,7 @@ interface ClientError {
 
 interface RumBeacon {
     path: string;
-    deviceType: 'desktop' | 'mobile' | 'tablet';
+    deviceType: "desktop" | "mobile" | "tablet";
     connectionType?: string;
     metrics?: RumMetrics;
     errors?: ClientError[];
@@ -44,18 +44,17 @@ function resetState(): void {
     }
 }
 
-
 function truncate(str: string, max: number): string {
     return str.length > max ? str.slice(0, max) : str;
 }
 
 function collectNavigationTiming(): void {
-    if (typeof performance === 'undefined') {
+    if (typeof performance === "undefined") {
         return;
     }
 
     try {
-        const entries = performance.getEntriesByType('navigation') as PerformanceNavigationTiming[];
+        const entries = performance.getEntriesByType("navigation") as PerformanceNavigationTiming[];
         const nav = entries[0];
         if (!nav) {
             return;
@@ -84,9 +83,8 @@ function sendBeacon(endpoint: string): void {
         return;
     }
 
-
     const beacon: RumBeacon = {
-        path: typeof location !== 'undefined' ? location.pathname : '/',
+        path: typeof location !== "undefined" ? location.pathname : "/",
         deviceType: getDeviceType(),
         connectionType: getConnectionType(),
     };
@@ -127,7 +125,11 @@ function sendBeacon(endpoint: string): void {
  */
 export function initRum(config?: RumConfig): () => void {
     // Guard: RUM only runs in a browser with window, document, and sendBeacon
-    if ( typeof window === 'undefined' || typeof document === 'undefined' || typeof navigator?.sendBeacon !== 'function' ) {
+    if (
+        typeof window === "undefined" ||
+        typeof document === "undefined" ||
+        typeof navigator?.sendBeacon !== "function"
+    ) {
         return () => {};
     }
 
@@ -140,15 +142,27 @@ export function initRum(config?: RumConfig): () => void {
     collectNavigationTiming();
 
     // Lazy-import web-vitals — zero cost if not installed
-    import('web-vitals').then(({ onLCP, onFID, onINP, onCLS, onTTFB }) => {
-        onLCP((metric) => { collectedMetrics.lcp = Math.round(metric.value); });
-        onFID((metric) => { collectedMetrics.fid = Math.round(metric.value); });
-        onINP((metric) => { collectedMetrics.inp = Math.round(metric.value); });
-        onCLS((metric) => { collectedMetrics.cls = metric.value; }); // CLS is unitless, don't round
-        onTTFB((metric) => { collectedMetrics.ttfb = Math.round(metric.value); });
-    }).catch(() => {
-        // web-vitals not installed — skip CWV collection, still collect nav timing + errors
-    });
+    import("web-vitals")
+        .then(({ onLCP, onFID, onINP, onCLS, onTTFB }) => {
+            onLCP((metric) => {
+                collectedMetrics.lcp = Math.round(metric.value);
+            });
+            onFID((metric) => {
+                collectedMetrics.fid = Math.round(metric.value);
+            });
+            onINP((metric) => {
+                collectedMetrics.inp = Math.round(metric.value);
+            });
+            onCLS((metric) => {
+                collectedMetrics.cls = metric.value;
+            }); // CLS is unitless, don't round
+            onTTFB((metric) => {
+                collectedMetrics.ttfb = Math.round(metric.value);
+            });
+        })
+        .catch(() => {
+            // web-vitals not installed — skip CWV collection, still collect nav timing + errors
+        });
 
     // Error listeners
     function handleError(event: ErrorEvent): void {
@@ -156,8 +170,8 @@ export function initRum(config?: RumConfig): () => void {
             return;
         }
         collectedErrors.push({
-            type: 'unhandled_exception',
-            message: truncate(event.message || 'Unknown error', MAX_MESSAGE_LEN),
+            type: "unhandled_exception",
+            message: truncate(event.message || "Unknown error", MAX_MESSAGE_LEN),
             stack: event.error?.stack ? truncate(event.error.stack, MAX_STACK_LEN) : undefined,
         });
     }
@@ -169,27 +183,27 @@ export function initRum(config?: RumConfig): () => void {
         const target = event.target as HTMLElement & { src?: string; href?: string };
         if (target?.tagName) {
             collectedErrors.push({
-                type: 'resource_load_failure',
+                type: "resource_load_failure",
                 message: `Failed to load ${target.tagName.toLowerCase()}`,
-                resourceUrl: truncate((target.src || target.href || ''), MAX_MESSAGE_LEN),
+                resourceUrl: truncate(target.src || target.href || "", MAX_MESSAGE_LEN),
             });
         }
     }
 
     function handleVisibilityChange(): void {
-        if (document.visibilityState === 'hidden') {
+        if (document.visibilityState === "hidden") {
             sendBeacon(endpoint);
         }
     }
 
-    window.addEventListener('error', handleError);
-    window.addEventListener('error', handleResourceError, true); // capture phase for resource errors
-    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener("error", handleError);
+    window.addEventListener("error", handleResourceError, true); // capture phase for resource errors
+    document.addEventListener("visibilitychange", handleVisibilityChange);
 
     // Teardown
     return () => {
-        window.removeEventListener('error', handleError);
-        window.removeEventListener('error', handleResourceError, true);
-        document.removeEventListener('visibilitychange', handleVisibilityChange);
+        window.removeEventListener("error", handleError);
+        window.removeEventListener("error", handleResourceError, true);
+        document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
 }

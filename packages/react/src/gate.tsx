@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { useGeo } from './hook';
+import type React from "react";
+import { useGeo } from "./hook";
 
 export interface GeoGateProps {
     children: React.ReactNode;
@@ -67,7 +67,7 @@ export function GeoGate({
 
     let euMatch = true;
     if (eu !== undefined) {
-        const isEU = geo.location?.country?.unions?.includes('EU') ?? false;
+        const isEU = geo.location?.country?.unions?.includes("EU") ?? false;
         euMatch = eu === isEU;
     }
 

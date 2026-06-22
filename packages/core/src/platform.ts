@@ -1,4 +1,4 @@
-import type { Geo } from './types';
+import type { Geo } from "./types";
 
 /** Lazy-cached Intl.DisplayNames instance for country code → name lookups. */
 let regionNames: Intl.DisplayNames | undefined;
@@ -8,7 +8,7 @@ function getRegionNames(): Intl.DisplayNames | undefined {
         return regionNames;
     }
     try {
-        regionNames = new Intl.DisplayNames(['en'], { type: 'region' });
+        regionNames = new Intl.DisplayNames(["en"], { type: "region" });
         return regionNames;
     } catch {
         return undefined;
@@ -26,21 +26,21 @@ export function getGeoFromPlatformHeaders(headers: Headers): Partial<Geo> {
 
     // --- Vercel headers ---
 
-    const vercelCountry = headers.get('x-vercel-ip-country');
+    const vercelCountry = headers.get("x-vercel-ip-country");
     if (vercelCountry) {
         if (!geo.location) geo.location = {};
         if (!geo.location.country) geo.location.country = {};
         geo.location.country.code = vercelCountry;
     }
 
-    const vercelRegion = headers.get('x-vercel-ip-country-region');
+    const vercelRegion = headers.get("x-vercel-ip-country-region");
     if (vercelRegion) {
         if (!geo.location) geo.location = {};
         if (!geo.location.region) geo.location.region = {};
         geo.location.region.code = vercelRegion;
     }
 
-    const vercelCity = headers.get('x-vercel-ip-city');
+    const vercelCity = headers.get("x-vercel-ip-city");
     if (vercelCity !== null) {
         if (!geo.location) geo.location = {};
         try {
@@ -50,7 +50,7 @@ export function getGeoFromPlatformHeaders(headers: Headers): Partial<Geo> {
         }
     }
 
-    const vercelLat = headers.get('x-vercel-ip-latitude');
+    const vercelLat = headers.get("x-vercel-ip-latitude");
     if (vercelLat) {
         const lat = parseFloat(vercelLat);
         if (isFinite(lat)) {
@@ -60,7 +60,7 @@ export function getGeoFromPlatformHeaders(headers: Headers): Partial<Geo> {
         }
     }
 
-    const vercelLng = headers.get('x-vercel-ip-longitude');
+    const vercelLng = headers.get("x-vercel-ip-longitude");
     if (vercelLng) {
         const lng = parseFloat(vercelLng);
         if (isFinite(lng)) {
@@ -70,7 +70,7 @@ export function getGeoFromPlatformHeaders(headers: Headers): Partial<Geo> {
         }
     }
 
-    const vercelTz = headers.get('x-vercel-ip-timezone');
+    const vercelTz = headers.get("x-vercel-ip-timezone");
     if (vercelTz) {
         if (!geo.location) geo.location = {};
         geo.location.timezone = vercelTz;
@@ -78,7 +78,7 @@ export function getGeoFromPlatformHeaders(headers: Headers): Partial<Geo> {
 
     // --- Cloudflare headers ---
 
-    const cfCountry = headers.get('cf-ipcountry');
+    const cfCountry = headers.get("cf-ipcountry");
     if (cfCountry && !geo.location?.country?.code) {
         if (!geo.location) geo.location = {};
         if (!geo.location.country) geo.location.country = {};
@@ -87,7 +87,7 @@ export function getGeoFromPlatformHeaders(headers: Headers): Partial<Geo> {
 
     // --- CloudFront headers ---
 
-    const cfrontCountry = headers.get('cloudfront-viewer-country');
+    const cfrontCountry = headers.get("cloudfront-viewer-country");
     if (cfrontCountry && !geo.location?.country?.code) {
         if (!geo.location) geo.location = {};
         if (!geo.location.country) geo.location.country = {};

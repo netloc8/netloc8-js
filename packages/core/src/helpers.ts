@@ -1,4 +1,4 @@
-import type { Geo } from './types';
+import type { Geo } from "./types";
 
 /**
  * Check whether a Geo object represents a location within the European Union.
@@ -12,6 +12,6 @@ import type { Geo } from './types';
  *     showCookieConsent();
  * }
  */
-export function isEU( geo: Geo ): boolean {
-    return geo.location?.country?.unions?.includes( 'EU' ) ?? false;
+export function isEU(geo: Geo): boolean {
+    return geo.location?.country?.unions?.includes("EU") ?? false;
 }

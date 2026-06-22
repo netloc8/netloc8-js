@@ -1,16 +1,17 @@
-'use client';
+"use client";
 
-import type { Geo, RumConfig } from '@netloc8/core';
-import React, { useEffect, useState, useMemo } from 'react';
+import type { Geo, RumConfig } from "@netloc8/core";
 import {
+    COOKIE_NAME,
+    COOKIE_OPTIONS,
     fetchMyGeo,
     normalizeApiResponse,
     parseCookie,
     serializeCookie,
-    COOKIE_NAME,
-    COOKIE_OPTIONS,
-} from '@netloc8/core';
-import { GeoContext, type GeoContextValue } from './context';
+} from "@netloc8/core";
+import type React from "react";
+import { useEffect, useMemo, useState } from "react";
+import { GeoContext, type GeoContextValue } from "./context";
 
 export interface NetLoc8ProviderProps {
     children: React.ReactNode;
@@ -25,7 +26,7 @@ export interface NetLoc8ProviderProps {
      * - `apiKey` → `'direct'`
      * - `geo` (or neither) → `'proxy'`
      */
-    mode?: 'direct' | 'proxy';
+    mode?: "direct" | "proxy";
     /** Content to render while geo data is loading. */
     loading?: React.ReactNode;
     /** Enable RUM beacon collection. @default true */
@@ -51,12 +52,12 @@ function hasGeoData(geo: Geo): boolean {
  */
 function readCachedGeo(): Geo | undefined {
     try {
-        if (typeof document === 'undefined') {
+        if (typeof document === "undefined") {
             return undefined;
         }
 
         const cookieStr = document.cookie
-            .split('; ')
+            .split("; ")
             .find((c) => c.startsWith(`${COOKIE_NAME}=`))
             ?.slice(COOKIE_NAME.length + 1);
 
@@ -92,11 +93,13 @@ export function NetLoc8Provider({
     rumSampleRate,
 }: NetLoc8ProviderProps): React.JSX.Element {
     // Auto-detect mode: apiKey → direct, otherwise → proxy
-    const mode = explicitMode ?? (apiKey ? 'direct' : 'proxy');
+    const mode = explicitMode ?? (apiKey ? "direct" : "proxy");
 
     // Guard: warn if a secret key is passed to the client-side Provider
-    if (apiKey?.startsWith('sk_')) {
-        console.error('[netloc8] Secret keys (sk_) must not be used in client components. Use a publishable key (pk_) instead.');
+    if (apiKey?.startsWith("sk_")) {
+        console.error(
+            "[netloc8] Secret keys (sk_) must not be used in client components. Use a publishable key (pk_) instead.",
+        );
     }
 
     // Seed geo state from the prop (proxy) or cookie cache (direct repeat visits)
@@ -104,7 +107,7 @@ export function NetLoc8Provider({
         if (initialGeo && hasGeoData(initialGeo as Geo)) {
             return initialGeo as Geo;
         }
-        if (mode === 'direct') {
+        if (mode === "direct") {
             return readCachedGeo() ?? {};
         }
         return initialGeo ?? {};
@@ -112,20 +115,20 @@ export function NetLoc8Provider({
 
     const [isLoading, setIsLoading] = useState<boolean>(() => {
         // Proxy mode with geo prop — data is already available
-        if (mode === 'proxy' && initialGeo && hasGeoData(initialGeo as Geo)) {
+        if (mode === "proxy" && initialGeo && hasGeoData(initialGeo as Geo)) {
             return false;
         }
         // Direct mode — true only if we have no cached data
-        if (mode === 'direct' && apiKey) {
+        if (mode === "direct" && apiKey) {
             return !hasGeoData(geo);
         }
         return false;
     });
     const [error, setError] = useState<Error | null>(null);
 
-    // Direct-mode: fetch geo from the API on mount (skip if cookie provided data)
+    // biome-ignore lint/correctness/useExhaustiveDependencies: geo is seed data, not a dependency
     useEffect(() => {
-        if (mode !== 'direct' || !apiKey) {
+        if (mode !== "direct" || !apiKey) {
             return;
         }
 
@@ -138,25 +141,29 @@ export function NetLoc8Provider({
         setIsLoading(true);
         setError(null);
 
-        fetchMyGeo({ apiKey }).then((raw) => {
-            if (cancelled) {
-                return;
-            }
-            if (!raw) {
-                setError(new Error('Geo lookup returned no data'));
+        fetchMyGeo({ apiKey })
+            .then((raw) => {
+                if (cancelled) {
+                    return;
+                }
+                if (!raw) {
+                    setError(new Error("Geo lookup returned no data"));
+                    setIsLoading(false);
+                    return;
+                }
+                const fetched = normalizeApiResponse(raw);
+                setGeo((prev) => ({ ...prev, ...fetched }));
                 setIsLoading(false);
-                return;
-            }
-            const fetched = normalizeApiResponse(raw);
-            setGeo((prev) => ({ ...prev, ...fetched }));
-            setIsLoading(false);
-        }).catch((err) => {
-            if (!cancelled) {
-                setError(err instanceof Error ? err : new Error(String(err)));
-                setIsLoading(false);
-            }
-        });
-        return () => { cancelled = true; };
+            })
+            .catch((err) => {
+                if (!cancelled) {
+                    setError(err instanceof Error ? err : new Error(String(err)));
+                    setIsLoading(false);
+                }
+            });
+        return () => {
+            cancelled = true;
+        };
     }, [mode, apiKey]); // eslint-disable-line react-hooks/exhaustive-deps — geo is seed data, not a dependency
 
     // Timezone reconciliation — always runs regardless of mode
@@ -193,7 +200,7 @@ export function NetLoc8Provider({
 
             // Write to cookie using shared options
             try {
-                document.cookie = `${COOKIE_NAME}=${serializeCookie(updated)}; path=${COOKIE_OPTIONS.path}; max-age=${COOKIE_OPTIONS.maxAge}; SameSite=${COOKIE_OPTIONS.sameSite}${COOKIE_OPTIONS.secure ? '; Secure' : ''}`;
+                document.cookie = `${COOKIE_NAME}=${serializeCookie(updated)}; path=${COOKIE_OPTIONS.path}; max-age=${COOKIE_OPTIONS.maxAge}; SameSite=${COOKIE_OPTIONS.sameSite}${COOKIE_OPTIONS.secure ? "; Secure" : ""}`;
             } catch {
                 // Cookie write failed — SSR or cookie disabled
             }
@@ -204,7 +211,7 @@ export function NetLoc8Provider({
 
     // Sync cookie when geo changes from direct mode fetch
     useEffect(() => {
-        if (mode !== 'direct') {
+        if (mode !== "direct") {
             return;
         }
 
@@ -214,7 +221,7 @@ export function NetLoc8Provider({
         }
 
         try {
-            document.cookie = `${COOKIE_NAME}=${serializeCookie(geo)}; path=/; max-age=2592000; SameSite=Lax${location.protocol === 'https:' ? '; Secure' : ''}`;
+            document.cookie = `${COOKIE_NAME}=${serializeCookie(geo)}; path=/; max-age=2592000; SameSite=Lax${location.protocol === "https:" ? "; Secure" : ""}`;
         } catch {
             // Cookie write failed
         }
@@ -227,41 +234,34 @@ export function NetLoc8Provider({
         }
 
         // Sample rate check — skip collection for this page load
-        if (typeof rumSampleRate === 'number' && Math.random() > rumSampleRate) {
+        if (typeof rumSampleRate === "number" && Math.random() > rumSampleRate) {
             return;
         }
 
         let teardown: (() => void) | undefined;
 
-        import('@netloc8/core/telemetry/rum').then((mod) => {
-            teardown = mod.initRum({
-                endpoint: rumEndpoint,
-                sampleRate: rumSampleRate,
+        import("@netloc8/core/telemetry/rum")
+            .then((mod) => {
+                teardown = mod.initRum({
+                    endpoint: rumEndpoint,
+                    sampleRate: rumSampleRate,
+                });
+            })
+            .catch(() => {
+                // web-vitals not available — silently skip
             });
-        }).catch(() => {
-            // web-vitals not available — silently skip
-        });
 
-        return () => { teardown?.(); };
+        return () => {
+            teardown?.();
+        };
     }, [rum, rumEndpoint, rumSampleRate]);
 
-    const value: GeoContextValue = useMemo(
-        () => ({ geo, isLoading, error }),
-        [geo, isLoading, error],
-    );
+    const value: GeoContextValue = useMemo(() => ({ geo, isLoading, error }), [geo, isLoading, error]);
 
     // Show loading content while geo data is being fetched
     if (isLoading && loadingContent !== undefined) {
-        return (
-            <GeoContext.Provider value={value}>
-                {loadingContent}
-            </GeoContext.Provider>
-        );
+        return <GeoContext.Provider value={value}>{loadingContent}</GeoContext.Provider>;
     }
 
-    return (
-        <GeoContext.Provider value={value}>
-            {children}
-        </GeoContext.Provider>
-    );
+    return <GeoContext.Provider value={value}>{children}</GeoContext.Provider>;
 }

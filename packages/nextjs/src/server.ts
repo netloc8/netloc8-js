@@ -1,7 +1,7 @@
-import type { Geo } from '@netloc8/core';
-import { headers } from 'next/headers';
-import { DEFAULT_API_URL, fetchTimezone } from '@netloc8/core';
-import { readGeoHeaders } from './proxy';
+import type { Geo } from "@netloc8/core";
+import { DEFAULT_API_URL, fetchTimezone } from "@netloc8/core";
+import { headers } from "next/headers";
+import { readGeoHeaders } from "./proxy";
 
 /**
  * Read geo data in a Server Component, Route Handler, or Server Action.
