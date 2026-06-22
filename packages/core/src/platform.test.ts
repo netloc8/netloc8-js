@@ -1,81 +1,102 @@
-import { describe, test, expect } from 'bun:test';
-import { getGeoFromPlatformHeaders } from './platform';
+import { describe, expect, test } from "bun:test";
+import { getGeoFromPlatformHeaders } from "./platform";
 
-describe('getGeoFromPlatformHeaders', () => {
-    test('extracts Vercel headers into nested Geo', () => {
+describe("getGeoFromPlatformHeaders", () => {
+    test("extracts Vercel headers into nested Geo", () => {
         const headers = new Headers({
-            'x-vercel-ip-country': 'US',
-            'x-vercel-ip-country-region': 'CA',
-            'x-vercel-ip-city': 'Mountain%20View',
-            'x-vercel-ip-latitude': '37.386',
-            'x-vercel-ip-longitude': '-122.084',
-            'x-vercel-ip-timezone': 'America/Los_Angeles',
+            "x-vercel-ip-country": "US",
+            "x-vercel-ip-country-region": "CA",
+            "x-vercel-ip-city": "Mountain%20View",
+            "x-vercel-ip-latitude": "37.386",
+            "x-vercel-ip-longitude": "-122.084",
+            "x-vercel-ip-timezone": "America/Los_Angeles",
         });
 
         const geo = getGeoFromPlatformHeaders(headers);
 
-        expect(geo.location?.country?.code).toBe('US');
-        expect(geo.location?.region?.code).toBe('CA');
-        expect(geo.location?.city).toBe('Mountain View');
+        expect(geo.location?.country?.code).toBe("US");
+        expect(geo.location?.region?.code).toBe("CA");
+        expect(geo.location?.city).toBe("Mountain View");
         expect(geo.location?.coordinates?.latitude).toBe(37.386);
         expect(geo.location?.coordinates?.longitude).toBe(-122.084);
-        expect(geo.location?.timezone).toBe('America/Los_Angeles');
+        expect(geo.location?.timezone).toBe("America/Los_Angeles");
     });
 
-    test('extracts Cloudflare country header', () => {
+    test("extracts Cloudflare country header", () => {
         const headers = new Headers({
-            'cf-ipcountry': 'DE',
+            "cf-ipcountry": "DE",
         });
 
         const geo = getGeoFromPlatformHeaders(headers);
-        expect(geo.location?.country?.code).toBe('DE');
+        expect(geo.location?.country?.code).toBe("DE");
     });
 
-    test('extracts CloudFront country header', () => {
+    test("extracts CloudFront country header", () => {
         const headers = new Headers({
-            'cloudfront-viewer-country': 'JP',
+            "cloudfront-viewer-country": "JP",
         });
 
         const geo = getGeoFromPlatformHeaders(headers);
-        expect(geo.location?.country?.code).toBe('JP');
+        expect(geo.location?.country?.code).toBe("JP");
     });
 
-    test('Vercel country takes priority over Cloudflare', () => {
+    test("Vercel country takes priority over Cloudflare", () => {
         const headers = new Headers({
-            'x-vercel-ip-country': 'US',
-            'cf-ipcountry': 'DE',
+            "x-vercel-ip-country": "US",
+            "cf-ipcountry": "DE",
         });
 
         const geo = getGeoFromPlatformHeaders(headers);
-        expect(geo.location?.country?.code).toBe('US');
+        expect(geo.location?.country?.code).toBe("US");
     });
 
-    test('returns empty object when no platform headers present', () => {
+    test("returns empty object when no platform headers present", () => {
         const headers = new Headers({
-            'content-type': 'application/json',
+            "content-type": "application/json",
         });
 
         const geo = getGeoFromPlatformHeaders(headers);
         expect(geo.location).toBeUndefined();
     });
 
-    test('handles invalid latitude gracefully', () => {
+    test("handles invalid latitude gracefully", () => {
         const headers = new Headers({
-            'x-vercel-ip-latitude': 'not-a-number',
+            "x-vercel-ip-latitude": "not-a-number",
         });
 
         const geo = getGeoFromPlatformHeaders(headers);
         expect(geo.location?.coordinates?.latitude).toBeUndefined();
     });
 
-    test('handles partial Vercel headers', () => {
+    test("handles partial Vercel headers", () => {
         const headers = new Headers({
-            'x-vercel-ip-country': 'GB',
+            "x-vercel-ip-country": "GB",
         });
 
         const geo = getGeoFromPlatformHeaders(headers);
-        expect(geo.location?.country?.code).toBe('GB');
+        expect(geo.location?.country?.code).toBe("GB");
         expect(geo.location?.region).toBeUndefined();
         expect(geo.location?.city).toBeUndefined();
+    });
+
+    test("enriches country code with name via Intl.DisplayNames", () => {
+        const headers = new Headers({
+            "cf-ipcountry": "US",
+        });
+        const geo = getGeoFromPlatformHeaders(headers);
+        expect(geo.location?.country?.code).toBe("US");
+        // Intl.DisplayNames should resolve 'US' to 'United States'
+        expect(geo.location?.country?.name).toBe("United States");
+    });
+
+    test("enriches Vercel country code with display name", () => {
+        // Vercel provides country code but not name.
+        // Enrichment should fill in the name via Intl.DisplayNames.
+        const headers = new Headers({
+            "x-vercel-ip-country": "DE",
+        });
+        const geo = getGeoFromPlatformHeaders(headers);
+        expect(geo.location?.country?.code).toBe("DE");
+        expect(geo.location?.country?.name).toBe("Germany");
     });
 });

@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useContext } from 'react';
-import { GeoContext, type GeoContextValue } from './context';
+import { useContext } from "react";
+import { GeoContext, type GeoContextValue } from "./context";
 
 /**
  * Hook to access geolocation data in client components.
@@ -26,7 +26,7 @@ export function useGeo(): GeoContextValue {
     const ctx = useContext(GeoContext);
 
     if (ctx === null) {
-        throw new Error('useGeo() must be used inside a <NetLoc8Provider>.');
+        throw new Error("useGeo() must be used inside a <NetLoc8Provider>.");
     }
 
     return ctx;
