@@ -34,13 +34,16 @@ bun run format
 
 # Lint
 bun run lint
+
+# Format + lint in one pass
+bun run check
 ```
 
 ## Project Structure
 
 ```
 packages/
-├── core/     @netloc8/core    — API client, IP detection, cookies, types (zero deps)
+├── core/     @netloc8/core    — API client, IP detection, cookies, types
 ├── react/    @netloc8/react   — Provider, useGeo() hook, GeoGate component
 └── nextjs/   @netloc8/nextjs  — Next.js proxy, server functions, re-exports react
 ```
