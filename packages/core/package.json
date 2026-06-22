@@ -30,6 +30,7 @@
         "directory": "packages/core"
     },
     "type": "module",
+    "sideEffects": false,
     "license": "Elastic-2.0",
     "exports": {
         ".": {
