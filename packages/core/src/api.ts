@@ -199,3 +199,17 @@ export async function fetchMyTimezone(options?: FetchGeoOptions): Promise<string
     const url = `${resolveApiUrl(options)}/v1/ip/me/timezone`;
     return fetchApi<string>(url, "Self timezone lookup failed", options);
 }
+
+/**
+ * Validate whether a string is a valid IP address via the NetLoc8 API.
+ *
+ * Returns true if the address is a valid IPv4 or IPv6 address, false
+ * otherwise. Returns null on error/timeout.
+ *
+ * For local-only validation without an API call, use the `normalizeIp`
+ * and `isPublicIp` helpers from this package instead.
+ */
+export async function fetchValidation(ipAddress: string, options?: FetchGeoOptions): Promise<boolean | null> {
+    const url = `${resolveApiUrl(options)}/v1/ip/${encodeURIComponent(ipAddress)}/validation`;
+    return fetchApi<boolean>(url, `Validation failed for ${ipAddress}`, options);
+}

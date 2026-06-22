@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, mock, test } from "bun:test";
-import { fetchGeo, fetchMyGeo, fetchMyTimezone, fetchTimezone } from "./api";
+import { fetchGeo, fetchMyGeo, fetchMyTimezone, fetchTimezone, fetchValidation } from "./api";
 
 describe("fetchGeo", () => {
     beforeEach(() => {
@@ -288,6 +288,86 @@ describe("fetchMyTimezone", () => {
         delete process.env.NETLOC8_API_KEY;
 
         const result = await fetchMyTimezone();
+        expect(result).toBeNull();
+    });
+});
+
+describe("fetchValidation", () => {
+    beforeEach(() => {
+        process.env.NETLOC8_API_KEY = "sk_test_key";
+        delete process.env.NETLOC8_API_URL;
+    });
+
+    test("returns true for a valid IP", async () => {
+        const originalFetch = globalThis.fetch;
+        globalThis.fetch = mock(() =>
+            Promise.resolve(new Response(JSON.stringify(true), { status: 200 })),
+        ) as unknown as typeof fetch;
+
+        const result = await fetchValidation("8.8.8.8");
+        expect(result).toBe(true);
+
+        globalThis.fetch = originalFetch;
+    });
+
+    test("returns false for an invalid IP", async () => {
+        const originalFetch = globalThis.fetch;
+        globalThis.fetch = mock(() =>
+            Promise.resolve(new Response(JSON.stringify(false), { status: 200 })),
+        ) as unknown as typeof fetch;
+
+        const result = await fetchValidation("not-an-ip");
+        expect(result).toBe(false);
+
+        globalThis.fetch = originalFetch;
+    });
+
+    test("uses /v1/ip/.../validation path", async () => {
+        const originalFetch = globalThis.fetch;
+        let capturedUrl = "";
+
+        globalThis.fetch = mock((url: string | URL | Request) => {
+            capturedUrl = url as string;
+            return Promise.resolve(new Response(JSON.stringify(true), { status: 200 }));
+        }) as unknown as typeof fetch;
+
+        await fetchValidation("8.8.8.8");
+        expect(capturedUrl).toBe("https://api.netloc8.com/v1/ip/8.8.8.8/validation");
+
+        globalThis.fetch = originalFetch;
+    });
+
+    test("encodes IP address in URL", async () => {
+        const originalFetch = globalThis.fetch;
+        let capturedUrl = "";
+
+        globalThis.fetch = mock((url: string | URL | Request) => {
+            capturedUrl = url as string;
+            return Promise.resolve(new Response(JSON.stringify(true), { status: 200 }));
+        }) as unknown as typeof fetch;
+
+        await fetchValidation("2001:4860:4860::8888");
+        expect(capturedUrl).toContain(encodeURIComponent("2001:4860:4860::8888"));
+
+        globalThis.fetch = originalFetch;
+    });
+
+    test("returns null on failure", async () => {
+        const originalFetch = globalThis.fetch;
+        globalThis.fetch = mock(() =>
+            Promise.resolve(new Response("", { status: 500 })),
+        ) as unknown as typeof fetch;
+
+        const result = await fetchValidation("8.8.8.8");
+        expect(result).toBeNull();
+
+        globalThis.fetch = originalFetch;
+    });
+
+    test("returns null when no API key", async () => {
+        delete process.env.NETLOC8_API_KEY;
+
+        const result = await fetchValidation("8.8.8.8");
         expect(result).toBeNull();
     });
 });
