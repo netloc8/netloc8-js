@@ -78,4 +78,25 @@ describe("getGeoFromPlatformHeaders", () => {
         expect(geo.location?.region).toBeUndefined();
         expect(geo.location?.city).toBeUndefined();
     });
+
+    test('enriches country code with name via Intl.DisplayNames', () => {
+        const headers = new Headers({
+            'cf-ipcountry': 'US',
+        });
+        const geo = getGeoFromPlatformHeaders(headers);
+        expect(geo.location?.country?.code).toBe('US');
+        // Intl.DisplayNames should resolve 'US' to 'United States'
+        expect(geo.location?.country?.name).toBe('United States');
+    });
+
+    test('does not overwrite existing country name', () => {
+        // Vercel provides both country code and city but not name.
+        // After extraction, enrichment should fill in the name.
+        const headers = new Headers({
+            'x-vercel-ip-country': 'DE',
+        });
+        const geo = getGeoFromPlatformHeaders(headers);
+        expect(geo.location?.country?.code).toBe('DE');
+        expect(geo.location?.country?.name).toBe('Germany');
+    });
 });

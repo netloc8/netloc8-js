@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import type { Geo } from "@netloc8/core";
-import { readGeoHeaders } from "./proxy";
+import { readGeoHeaders, withGeoRedirect } from "./proxy";
 
 describe("header transport round-trip", () => {
     // Test that setGeoHeaders → readGeoHeaders preserves all fields.
@@ -140,5 +140,92 @@ describe("header transport round-trip", () => {
 
         const geo = readGeoHeaders(headers);
         expect(geo.meta?.degraded).toBe(true);
+    });
+});
+
+describe('withGeoRedirect', () => {
+    // Helper to create a minimal NextRequest-like object
+    function makeRequest(pathname: string): { nextUrl: { pathname: string; clone: () => { pathname: string } } } {
+        return {
+            nextUrl: {
+                pathname,
+                clone() { return { pathname, toString: () => `http://localhost${pathname}` }; },
+            },
+        };
+    }
+
+    test('redirects to locale-prefixed path for matching country', () => {
+        const handler = withGeoRedirect({
+            defaultLocale: 'en',
+            localeMap: { DE: 'de', FR: 'fr' },
+        });
+
+        const geo: Geo = { location: { country: { code: 'DE' } } };
+        const result = handler(makeRequest('/about') as any, geo);
+
+        expect(result).toBeDefined();
+        // Should be a 307 redirect
+        expect(result!.status).toBe(307);
+    });
+
+    test('returns undefined when country maps to default locale', () => {
+        const handler = withGeoRedirect({
+            defaultLocale: 'en',
+            localeMap: { US: 'en', DE: 'de' },
+        });
+
+        const geo: Geo = { location: { country: { code: 'US' } } };
+        const result = handler(makeRequest('/about') as any, geo);
+
+        expect(result).toBeUndefined();
+    });
+
+    test('returns undefined when path already has valid locale prefix', () => {
+        const handler = withGeoRedirect({
+            defaultLocale: 'en',
+            localeMap: { DE: 'de', FR: 'fr' },
+        });
+
+        const geo: Geo = { location: { country: { code: 'DE' } } };
+        const result = handler(makeRequest('/de/about') as any, geo);
+
+        expect(result).toBeUndefined();
+    });
+
+    test('returns undefined for excluded paths', () => {
+        const handler = withGeoRedirect({
+            defaultLocale: 'en',
+            localeMap: { DE: 'de' },
+            excludePaths: ['/api', '/_next'],
+        });
+
+        const geo: Geo = { location: { country: { code: 'DE' } } };
+        expect(handler(makeRequest('/api/data') as any, geo)).toBeUndefined();
+        expect(handler(makeRequest('/_next/static/chunk.js') as any, geo)).toBeUndefined();
+    });
+
+    test('uses default locale when country is not in localeMap', () => {
+        const handler = withGeoRedirect({
+            defaultLocale: 'en',
+            localeMap: { DE: 'de' },
+        });
+
+        const geo: Geo = { location: { country: { code: 'JP' } } };
+        const result = handler(makeRequest('/about') as any, geo);
+
+        // JP not in map → defaults to 'en' → no redirect
+        expect(result).toBeUndefined();
+    });
+
+    test('returns undefined when geo has no country', () => {
+        const handler = withGeoRedirect({
+            defaultLocale: 'en',
+            localeMap: { DE: 'de' },
+        });
+
+        const geo: Geo = {};
+        const result = handler(makeRequest('/about') as any, geo);
+
+        expect(result).toBeUndefined();
     });
 });
