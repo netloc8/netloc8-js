@@ -8,7 +8,7 @@ import type { Geo } from "./types";
  *
  * @example
  * const { geo } = useGeo();
- * if ( isEU( geo ) ) {
+ * if (isEU(geo)) {
  *     showCookieConsent();
  * }
  */

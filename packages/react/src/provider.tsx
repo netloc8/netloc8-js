@@ -164,7 +164,7 @@ export function NetLoc8Provider({
         return () => {
             cancelled = true;
         };
-    }, [mode, apiKey]); // eslint-disable-line react-hooks/exhaustive-deps — geo is seed data, not a dependency
+    }, [mode, apiKey]);
 
     // Timezone reconciliation — always runs regardless of mode
     useEffect(() => {
