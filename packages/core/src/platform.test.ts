@@ -89,9 +89,9 @@ describe("getGeoFromPlatformHeaders", () => {
         expect(geo.location?.country?.name).toBe("United States");
     });
 
-    test("does not overwrite existing country name", () => {
-        // Vercel provides both country code and city but not name.
-        // After extraction, enrichment should fill in the name.
+    test("enriches Vercel country code with display name", () => {
+        // Vercel provides country code but not name.
+        // Enrichment should fill in the name via Intl.DisplayNames.
         const headers = new Headers({
             "x-vercel-ip-country": "DE",
         });
