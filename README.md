@@ -1,5 +1,8 @@
 # NetLoc8 JavaScript SDK
 
+> **Note:** This repository is a read-only mirror. Please do not submit issues
+> or pull requests here; contributions and development are managed internally.
+
 [![npm version](https://img.shields.io/npm/v/@netloc8/core?label=%40netloc8%2Fcore)](https://www.npmjs.com/package/@netloc8/core)
 [![npm version](https://img.shields.io/npm/v/@netloc8/react?label=%40netloc8%2Freact)](https://www.npmjs.com/package/@netloc8/react)
 [![npm version](https://img.shields.io/npm/v/@netloc8/nextjs?label=%40netloc8%2Fnextjs)](https://www.npmjs.com/package/@netloc8/nextjs)
