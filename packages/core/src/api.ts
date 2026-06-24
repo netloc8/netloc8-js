@@ -1,6 +1,7 @@
 import { CLIENT_ID, DEFAULT_API_URL } from "./constants";
 import { getConnectionType, getLanguage, getTimezone } from "./signals";
 import type { ApiErrorResponse, FetchGeoOptions } from "./types";
+import { ApiError } from "./types";
 
 /** Cached RTT from the last API request (measured via Resource Timing). */
 let cachedRttMs: number | undefined;
@@ -100,11 +101,20 @@ function logApiError(context: string, apiError: ApiErrorResponse | null, status:
  * Returns the parsed JSON body, or null on error/timeout.
  * Never throws.
  */
-async function fetchApi<T>(url: string, context: string, options?: FetchGeoOptions): Promise<T | null> {
+export async function fetchApi<T>(
+    url: string,
+    context: string,
+    options?: FetchGeoOptions & {
+        method?: string;
+        body?: unknown;
+    },
+): Promise<T | null> {
     const apiKey = options?.apiKey ?? process.env.NETLOC8_API_KEY;
     const timeout = options?.timeout ?? 1500;
     const clientId = options?.clientId ?? CLIENT_ID;
     const allowAnonymous = options?.allowAnonymous === true;
+    const method = options?.method ?? "GET";
+    const body = options?.body;
 
     if (!apiKey && !allowAnonymous) {
         console.warn("[netloc8] No API key provided. Set NETLOC8_API_KEY or pass apiKey in options.");
@@ -120,10 +130,17 @@ async function fetchApi<T>(url: string, context: string, options?: FetchGeoOptio
         if (apiKey) {
             headers["X-API-Key"] = apiKey;
         }
+        if (body) {
+            headers["Content-Type"] = "application/json";
+        }
+        if (typeof window === "undefined" && typeof navigator === "undefined") {
+            headers["User-Agent"] = clientId;
+        }
 
         const response = await fetch(url, {
-            method: "GET",
+            method,
             headers,
+            body: body ? JSON.stringify(body) : undefined,
             signal: AbortSignal.timeout(timeout),
         });
 
@@ -132,12 +149,25 @@ async function fetchApi<T>(url: string, context: string, options?: FetchGeoOptio
         if (!response.ok) {
             const apiError = await parseApiError(response);
             logApiError(context, apiError, response.status);
+            if (options?.throwOnError) {
+                const code = apiError?.error?.code ?? "";
+                const message = apiError?.error?.message ?? response.statusText;
+                const requestId = apiError?.meta?.requestId;
+                throw new ApiError(response.status, code, message, requestId);
+            }
             return null;
+        }
+
+        if (response.status === 204) {
+            return {} as T;
         }
 
         return (await response.json()) as T;
     } catch (error) {
         console.warn(`[netloc8] ${context}: ${(error as Error).message}`);
+        if (options?.throwOnError) {
+            throw error;
+        }
         return null;
     }
 }
@@ -145,7 +175,7 @@ async function fetchApi<T>(url: string, context: string, options?: FetchGeoOptio
 /**
  * Resolve the API base URL from options or environment.
  */
-function resolveApiUrl(options?: FetchGeoOptions): string {
+export function resolveApiUrl(options?: FetchGeoOptions): string {
     return options?.apiUrl ?? process.env.NETLOC8_API_URL ?? DEFAULT_API_URL;
 }
 

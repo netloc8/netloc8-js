@@ -1,34 +1,104 @@
-# Dependencies
-node_modules/
+# dependencies
+node_modules
+/.pnp
+.pnp.js
 
-# Build output
-dist/
+# testing
+coverage
+
+# next.js
+.next/
+out/
+
+# production
+build
+dist
+
+# misc
+.DS_Store
+/ignore
+tmp/
+
+# yarn 2
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# vercel
+.vercel
+
+# next-pwa
+**/public/precache.*.*.js
+**/public/sw.js
+**/public/workbox-*.js
+**/public/worker-*.js
+**/public/fallback-*.js
+**/public/precache.*.*.js.map
+**/public/sw.js.map
+**/public/workbox-*.js.map
+**/public/worker-*.js.map
+**/public/fallback-*.js
+
+# env files (keep .env for committed non-secret defaults)
+.env.development
+.env.test
+.env.production
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# credentials
+*.credentials.json
+
+# private keys
+.private.key
+
+# json database file
+db.json
+
+# direnv configuration files - https://direnv.net/
+.envrc
+
+certificates
+
+# sqlite database
+data/
+*.db
+
+# geo-build temp/data directories
+_tune/
+_data/
+_output/
+tools/geo-build/tmp/
+
+# Native addon build artifacts
+tools/geo-build/native/build/
+.wrangler/
+
+# Go build artifacts (MCP server)
+packages/netloc8-mcp/netloc8-mcp
+packages/netloc8-mcp/netloc8-mcp-*
+packages/netloc8-mcp/mcp
+
+# TypeScript compiled output (npm MCP package)
+packages/mcp/dist/
+
+# Go build artifacts (Go SDK)
+packages/netloc8-go/netloc8-go
+
+# TypeScript build info
 *.tsbuildinfo
 
-# Environment
-.env
-.env.*
-!.env.example
-
-# OS
-.DS_Store
-Thumbs.db
-
-# IDE
-.vscode/
-!.vscode/settings.json
-!.vscode/extensions.json
-.idea/
-*.swp
-*.swo
-
-# Bun
-*.lockb
-
-# Logs
-*.log
-npm-debug.log*
-
-# Internal / private docs
+# JS SDK internal docs
 INTERNAL_SPEC.md
 REVIEW.md

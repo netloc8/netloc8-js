@@ -167,3 +167,25 @@ export function getClientIp(headers: Headers): string | undefined {
 
     return undefined;
 }
+
+/**
+ * Derive the /24 CIDR prefix from an IPv4 address.
+ * Returns empty string for IPv6 or invalid addresses.
+ */
+export function getSubnet(ip: string): string {
+    const normalized = normalizeIp(ip);
+    if (!normalized) {
+        return "";
+    }
+
+    if (normalized.includes(":")) {
+        return "";
+    }
+
+    const parts = normalized.split(".").map(Number);
+    if (parts.length !== 4 || parts.some((p) => !Number.isInteger(p) || p < 0 || p > 255)) {
+        return "";
+    }
+
+    return `${parts[0]}.${parts[1]}.${parts[2]}.0/24`;
+}

@@ -90,6 +90,8 @@ export interface FetchGeoOptions {
     clientId?: string;
     /** When true, skip the API key requirement and omit X-API-Key from headers. */
     allowAnonymous?: boolean;
+    /** When true, throw ApiError instead of returning null on failure. */
+    throwOnError?: boolean;
 }
 
 // --- Cookie options ---
@@ -107,4 +109,80 @@ export interface CookieOptions {
 export interface RumConfig {
     endpoint?: string;
     sampleRate?: number;
+}
+
+// --- Account management types ---
+
+export interface AccountProfile {
+    id: string;
+    email: string;
+    name?: string;
+    createdAt: string;
+}
+
+export interface ApiKey {
+    id: string;
+    prefix: string;
+    name: string;
+    type: "secret" | "publishable";
+    scopes: string[];
+    status: "active" | "expired" | "revoked";
+    createdAt: string;
+    expiresAt?: string;
+}
+
+export interface CreatedKey extends ApiKey {
+    rawKey: string;
+}
+
+export interface DailyUsage {
+    date: string;
+    totalRequests: number;
+}
+
+export interface KeyUsage {
+    keyPrefix: string;
+    keyName: string;
+    isActive: boolean;
+    lastUsedAt?: string;
+    rateLimitRemaining: number;
+    rateLimitMax: number;
+}
+
+export interface AccountUsage {
+    totalKeys: number;
+    activeKeys: number;
+    totalRequests: number;
+    monthlyCap: number | null;
+    dailyUsage: DailyUsage[];
+    keys: KeyUsage[];
+}
+
+export interface AuditLogEntry {
+    id: string;
+    action: string;
+    actorId: string;
+    actorLabel: string;
+    targetType?: string;
+    targetId?: string;
+    createdAt: string;
+}
+
+export interface AuditLogResponse {
+    entries: AuditLogEntry[];
+    total: number;
+}
+
+export class ApiError extends Error {
+    status: number;
+    code: string;
+    requestId?: string;
+
+    constructor(status: number, code: string, message: string, requestId?: string) {
+        super(message);
+        this.name = "ApiError";
+        this.status = status;
+        this.code = code;
+        this.requestId = requestId;
+    }
 }
