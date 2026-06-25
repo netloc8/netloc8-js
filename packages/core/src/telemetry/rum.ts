@@ -8,7 +8,6 @@ const MAX_STACK_LEN = 2000;
 
 interface RumMetrics {
     lcp?: number;
-    fid?: number;
     inp?: number;
     cls?: number;
     ttfb?: number;
@@ -71,12 +70,9 @@ export function initRum(config?: RumConfig): () => void {
 
     // Lazy-import web-vitals — zero cost if not installed
     import("web-vitals")
-        .then(({ onLCP, onFID, onINP, onCLS, onTTFB }) => {
+        .then(({ onLCP, onINP, onCLS, onTTFB }) => {
             onLCP((metric) => {
                 metrics.lcp = Math.round(metric.value);
-            });
-            onFID((metric) => {
-                metrics.fid = Math.round(metric.value);
             });
             onINP((metric) => {
                 metrics.inp = Math.round(metric.value);
