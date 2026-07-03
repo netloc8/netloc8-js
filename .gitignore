@@ -20,6 +20,7 @@ dist
 .DS_Store
 /ignore
 tmp/
+.deploy-refs/
 
 # yarn 2
 .pnp.*
