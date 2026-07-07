@@ -108,3 +108,5 @@ REVIEW.md
 
 # Generated at deploy time by geo:prebundle
 apps/geo/src/inline-shards.generated.js
+benchmark-*.json
+netloc8-*.json
