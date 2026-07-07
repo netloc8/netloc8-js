@@ -1,6 +1,6 @@
 {
     "name": "@netloc8/react",
-    "version": "1.47.2",
+    "version": "1.3.0",
     "description": "React geolocation components. Provider, useGeo() hook, and GeoGate for conditional rendering by country, region, city, and EU membership.",
     "keywords": [
         "react",
