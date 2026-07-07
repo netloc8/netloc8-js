@@ -105,3 +105,6 @@ packages/netloc8-go/netloc8-go
 # JS SDK internal docs
 INTERNAL_SPEC.md
 REVIEW.md
+
+# Generated at deploy time by geo:prebundle
+apps/geo/src/inline-shards.generated.js
