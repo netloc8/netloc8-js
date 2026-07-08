@@ -110,3 +110,5 @@ REVIEW.md
 apps/geo/src/inline-shards.generated.js
 benchmark-*.json
 netloc8-*.json
+scripts/benchmark-tail.jsonl
+scripts/prod-smoke-tail.jsonl
